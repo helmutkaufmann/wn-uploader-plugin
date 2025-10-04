@@ -1,0 +1,132 @@
+name: File and Image Uploader
+author: Helmut Kaufmann
+description: Shows an Uppy-powered upload form for a given Upload Form ID (or :id from the URL)
+tags: ["pages","upload"]
+fields:
+    form_id:
+        label: Form ID (optional)
+        type: text
+        span: left
+    text_position:
+        label: Title / Description position
+        type: dropdown
+        default: above
+        span: right
+        options:
+            none: Do not render
+            above: Above uploader
+            below: Below uploader
+==
+{# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
+{% set __fid = input('id')|default(form_id) %}
+{% set form = __fid ? uploader_form(__fid) : null %}
+
+{% if not form %}
+    <div class="uk-container uk-margin">
+        <div class="uk-alert-danger uk-card uk-card-body">
+            Upload form not found.
+        </div>
+    </div>
+{% else %}
+
+    {# Uppy #}
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+
+    <style>
+        /* Make Uppy Dashboard full width */
+        .uppy-Dashboard,
+        .uppy-Dashboard-inner {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    </style>
+
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
+        {# ABOVE #}
+        {% if text_position == 'above' %}
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
+            {% endif %}
+        {% endif %}
+        <div id="uppy" class="uk-margin"></div>
+        {# BELOW #}
+        {% if text_position == 'below' %}
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // const token = "{{ form_token() }}";
+        // Build endpoint from current path or from the form_id
+        // If the page URL already ends with .../<id>, we append /upload.
+        // Otherwise, fall back to /mercator/uploader/<id>/upload.
+        const currentPath = window.location.pathname.replace(/\/+$/, '');
+        const formId = {{ form.form_id|json_encode|raw }};
+        const endpoint = currentPath.match(new RegExp(formId + '$'))
+            ? currentPath + '/upload'
+            : '/mercator/uploader/' + formId + '/upload';
+
+        // Allowed extensions as ['.jpg','.png', ...]
+        const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
+        const allowedTypes = allowedTypesStr
+            ? allowedTypesStr.split(',').map(s => s.trim()).filter(Boolean)
+            : null;
+
+        const uppy = new Uppy.Uppy({
+            autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
+            allowMultipleUploadBatches: true,
+            restrictions: {
+                maxNumberOfFiles: null,
+                allowedFileTypes: allowedTypes
+            }
+        })
+        .use(Uppy.Dashboard, {
+            inline: true,
+            target: '#uppy',
+            proudlyDisplayPoweredByUppy: false,
+            showProgressDetails: false,
+            note: allowedTypes ? ('Allowed: ' + allowedTypes.join(' ')) : ''
+        })
+        .use(Uppy.Webcam)
+        .use(Uppy.Audio)
+        .use(Uppy.ScreenCapture)
+        .use(Uppy.ImageEditor, {
+            target: Uppy.Dashboard
+        })
+        {% if form.client_resize_enabled %}
+            .use(Uppy.Compressor, {
+                quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
+                maxWidth: {{ form.client_resize_max_width ?? 1920 }},
+                maxHeight: {{ form.client_resize_max_height ?? 1080 }},
+                // convertTypes: [],
+                preserveExif: true
+            })
+        {% endif %}
+        .use(Uppy.XHRUpload, {
+            endpoint: endpoint,
+            fieldName: 'file',
+            formData: true,
+            // headers: { 'X-CSRF-TOKEN': token },
+            allowMultipleUploads: true
+        });
+
+        uppy.on('complete', () => {
+            UIkit.notification({ message: 'Upload complete', status: 'success' });
+        });
+
+        uppy.on('upload-error', (file, error, response) => {
+            let msg = 'Upload failed';
+            if (response && response.body && response.body.error) msg = response.body.error;
+            else if (error && error.message) msg = error.message;
+            UIkit.notification({ message: msg, status: 'danger' });
+        });
+    });
+    </script>
+
+{% endif %}

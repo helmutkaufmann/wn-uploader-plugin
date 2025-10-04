@@ -1,0 +1,113 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    form_id:
+        label: Form ID
+        type: text
+        span: left
+        readOnly: true
+    title:
+        label: Title
+        type: text
+        span: right
+    description:
+        label: Description
+        type: textarea
+        size: large
+    upload_dir:
+        label: Resizing Directory
+        type: mediafinder
+        mode: folder 
+        span: left
+    allowed_types:
+        label: Allowed File Types
+        type: text
+        span: right
+        default: jpg,png,pdf
+    start_date:
+        label: Start DateTime
+        type: datepicker
+        mode: datetime
+        useTimezone: false          # no auto conversion
+        span: left
+        default: 2025-01-01 00:00:00
+    end_date:
+        label: End DateTime
+        type: datepicker
+        mode: datetime
+        useTimezone: false
+        span: right
+        default: 2099-12-31 23:59:59
+    timezone:
+        label: Timezone
+        type: dropdown
+        options: getTimezoneOptions
+        span: left
+        default: Europe/Zurich
+        
+    auto_upload_enabled:
+        label: Auto-upload files immediately
+        type: switch
+        span: right
+        default: true
+        comment: "If enabled files are uploaded as they are dropped by the user."
+        
+
+tabs:
+    fields:
+        section_1:
+            label: Resizing
+            type: section
+            tab: Pre-Proessing
+
+        client_resize_enabled:
+            label: Enable client-side resize/compress
+            type: switch
+            tab: Pre-Proessing
+            span: left
+            default: false
+
+        client_resize_max_width:
+            label: Max width (px)
+            type: number
+            tab: Pre-Proessing
+            span: left
+            default: 1920
+            trigger:
+                action: show
+                field: client_resize_enabled
+                condition: checked
+
+        client_resize_max_height:
+            label: Max height (px)
+            type: number
+            tab: Pre-Proessing
+            span: right
+            default: 1080
+            trigger:
+                action: show
+                field: client_resize_enabled
+                condition: checked
+            
+        client_resize_quality:
+            label: JPEG/WebP Quality (0.0–1.0)
+            type: number
+            tab: Pre-Proessing
+            span: left
+            default: 0.8
+            trigger:
+                action: show
+                field: client_resize_enabled
+                condition: checked
+            attributes:
+                step: 0.05
+                min: 0
+                max: 1
+        
+        section_2:
+            label: Misc
+            type: section
+            tab: Pre-Proessing
+

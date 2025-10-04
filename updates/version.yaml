@@ -1,0 +1,10 @@
+1.0.0:
+    - First version of Mercator.Uploader
+    - 01_00_00_create_upload_forms_table.php
+1.1.0:
+    - 'Add per-form client-side image resize & compression options'
+    - 01_01_00_add_client_resize_columns.php
+1.1.1:
+    - 'Add per-form auto upload toggle'
+    - 01_01_01_add_auto_upload_flag.php
+

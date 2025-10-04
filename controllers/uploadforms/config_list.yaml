@@ -1,0 +1,46 @@
+modelClass: Mercator\Uploader\Models\UploadForm
+title: Upload Forms
+recordUrl: mercator/uploader/uploadforms/update/:id
+recordsPerPage: 20
+showCheckboxes: true
+
+toolbar:
+    buttons: list_toolbar
+    search:
+        prompt: Search forms
+
+# Columns (provided inline under "list")
+list:
+    columns:
+        form_id:
+            label: Form ID
+            searchable: false
+        title:
+            label: Title
+            searchable: true
+        upload_dir:
+            label: Directory
+            searchable: true
+        allowed_types:
+            label: Types
+        start_date:
+            label: Start
+            type: datetime
+            format: Y-m-d H:i
+        end_date:
+            label: End
+            type: datetime
+            format: Y-m-d H:i
+        timezone:
+            label: Timezone
+            default: Europe/Zurich
+        client_resize_enabled:
+            label: Client Resize
+            type: switch
+        client_resize_max_width:
+            label: Max W
+        client_resize_max_height:
+            label: Max H
+        client_resize_quality:
+            label: Quality
+

@@ -1,0 +1,20 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+name: Upload Form
+modelClass: Mercator\Uploader\Models\UploadForm
+form: $/mercator/uploader/models/uploadform/fields.yaml
+
+defaultRedirect: mercator/uploader/uploadforms
+
+create:
+    title: Create Upload Form
+    redirect: mercator/uploader/uploadforms/update/:id
+    redirectClose: mercator/uploader/uploadforms
+
+update:
+    title: Update Upload Form
+    redirect: mercator/uploader/uploadforms
+    redirectClose: mercator/uploader/uploadforms
+

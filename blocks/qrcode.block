@@ -1,0 +1,20 @@
+name: QR Code Block
+author: Helmut Kaufmann
+description: Displays a QR Code linking to the upload page
+tags: ["pages"]
+fields:
+    title:
+        label: Title
+        type: text
+    description:
+        label: Description
+        type: textarea
+    url:
+        label: Upload Page URL
+        type: text
+==
+<div class="uk-card uk-card-default uk-card-body uk-text-center">
+        <h3>{{ title }}</h3>
+        <p>{{ description }}</p>
+        <img src="{{ qrCode(url) }}" alt="QR Code">
+</div>

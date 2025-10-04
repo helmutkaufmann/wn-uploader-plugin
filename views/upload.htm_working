@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ form.title }}</title>
+    <meta name="csrf-token" content="{{ csrf }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.20.3/dist/css/uikit.min.css" />
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v3.13.0/uppy.min.css" />
+    <style>
+/* Make Uppy Dashboard full width */
+.uppy-Dashboard {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+.uppy-Dashboard-inner {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+</style>
+</head>
+<body class="uk-container uk-margin">
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
+        <h3 class="uk-margin-small">{{ form.title }}</h3>
+        {% if form.description %}
+            <p class="uk-text-meta">{{ form.description }}</p>
+        {% endif %}
+        <div id="uppy" class="uk-margin"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.20.3/dist/js/uikit.min.js"></script>
+    <script src="https://releases.transloadit.com/uppy/v3.13.0/uppy.min.js_"></script>
+    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const endpoint = window.location.pathname.replace(/\/$/, '') + '/upload';
+
+        const uppy = new Uppy.Uppy({
+            autoProceed: true,
+            restrictions: { maxNumberOfFiles: null }
+        })
+        .use(Uppy.Dashboard, {
+            inline: true,
+            target: '#uppy',
+            proudlyDisplayPoweredByUppy: false
+        })
+         .use(Webcam)
+         .use(ImageEditor)
+        .use(Uppy.XHRUpload, {
+            endpoint: endpoint,
+            fieldName: 'file',
+            formData: true,
+            headers: { 'X-CSRF-TOKEN': token }
+        })
+{% if form.client_resize_enabled %}
+  .use(Uppy.Compressor, {
+    quality: {{ (form.client_resize_quality ?? 0.8) + 0 }}, // ensure numeric
+    maxWidth: {{ form.client_resize_max_width ?? 1920 }},
+    maxHeight: {{ form.client_resize_max_height ?? 1080 }},
+    convertTypes: [],   // keep original format
+    preserveExif: false
+  })
+{% endif %};
+
+        uppy.on('complete', () => {
+            UIkit.notification({ message: 'Upload complete', status: 'success' });
+        });
+
+        uppy.on('upload-error', (file, error, response) => {
+            let msg = 'Upload failed';
+            if (response && response.body && response.body.error) msg = response.body.error;
+            else if (error && error.message) msg = error.message;
+            UIkit.notification({ message: msg, status: 'danger' });
+        });
+    });
+    </script>
+</body>
+</html>

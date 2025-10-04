@@ -1,0 +1,26 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    form_id:
+        label: Form ID
+        searchable: true
+    title:
+        label: Title
+        searchable: true
+    upload_dir:
+        label: Directory
+    allowed_types:
+        label: Types
+    start_date:
+        label: Start
+        type: datetime
+        format: Y-m-d H:i
+    end_date:
+        label: End
+        type: datetime
+        format: Y-m-d H:i
+    timezone:
+        label: Timezone
+
