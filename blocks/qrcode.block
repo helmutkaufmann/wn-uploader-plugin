@@ -3,18 +3,56 @@ author: Helmut Kaufmann
 description: Displays a QR Code linking to the upload page
 tags: ["pages"]
 fields:
-    title:
-        label: Title
+    form_id:
+        label: Form ID
         type: text
-    description:
-        label: Description
-        type: textarea
+        span: left
     url:
-        label: Upload Page URL
+        label: Upload Page URL (relative to root, without leading /)
         type: text
+        span: right
+    text_position:
+        label: Title / Description position
+        type: dropdown
+        default: above
+        span: left
+        options:
+            none: Do not render
+            above: Above uploader
+            below: Below uploader
 ==
-<div class="uk-card uk-card-default uk-card-body uk-text-center">
-        <h3>{{ title }}</h3>
-        <p>{{ description }}</p>
-        <img src="{{ qrCode(url) }}" alt="QR Code">
-</div>
+{# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
+{% set __fid = input('id')|default(form_id) %}
+{% set form = __fid ? uploader_form(__fid) : null %}
+
+{% if not form %}
+    <div class="uk-container uk-margin">
+        <div class="uk-alert-danger uk-card uk-card-body">
+            Upload form not found.
+        </div>
+    </div>
+{% else %}
+    
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
+        {# ABOVE #}
+        {% if text_position == 'above' %}
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
+            {% endif %}
+        {% endif %}
+        <div class="uk-align-center">
+            <a href="{{url('/' ~ url ~ '?id='~ form_id)}}">
+                {{ qrcodeIMG(url("/" ~ url ~ "?id="~ form_id), 12, "XXXXXX", "000000") }}
+            </a>
+        </div>
+        {# BELOW #}
+        {% if text_position == 'below' %}
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+{% endif %}

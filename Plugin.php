@@ -56,10 +56,6 @@ class Plugin extends PluginBase
     {
         return [
             'functions' => [
-                'qrCode' => function ($url) {
-                    $data = \Mercator\Uploader\Classes\QrCode::pngData($url);
-                    return 'data:image/png;base64,' . base64_encode($data);
-                },
                 // Usage in Twig: {% set form = uploader_form('AbCdEf1234') %}
                 'uploader_form' => function ($formId) {
                     if (!is_string($formId) || $formId === '') {
@@ -75,8 +71,8 @@ class Plugin extends PluginBase
     public function registerBlocks()
     {
         return [
-            'qrcode' => base_path('plugins/mercator/uploader/blocks/qrcode.block'),
-            'aaa_uploader' => base_path('plugins/mercator/uploader/blocks/upload.block'),
+            'mercator_uploader_qrcode' => base_path('plugins/mercator/uploader/blocks/qrcode.block'),
+            'mercator_uploader_uploader' => base_path('plugins/mercator/uploader/blocks/upload.block'),
         ];
     }
 

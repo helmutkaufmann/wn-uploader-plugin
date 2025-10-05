@@ -1,7 +1,7 @@
 modelClass: Mercator\Uploader\Models\UploadForm
 title: Upload Forms
 recordUrl: mercator/uploader/uploadforms/update/:id
-recordsPerPage: 20
+recordsPerPage: 50
 showCheckboxes: true
 
 toolbar:
@@ -13,26 +13,26 @@ toolbar:
 list:
     columns:
         form_id:
-            label: Form ID
+            label: Form
             searchable: true
         title:
             label: Title
             searchable: true
         start_date:
-            label: Start
+            label: Start Date and Time
             type: datetime
             format: Y-m-d H:i
         end_date:
-            label: End
+            label: End Date and Time
             type: datetime
             format: Y-m-d H:i
         timezone:
             label: Timezone
             default: Europe/Zurich
-        allowed_types:
-            label: Types
         upload_dir:
             label: Directory
             searchable: true
+        allowed_types:
+            label: Types
         
 
