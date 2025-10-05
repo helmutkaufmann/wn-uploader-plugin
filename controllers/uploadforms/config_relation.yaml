@@ -1,0 +1,12 @@
+users:
+  label: Users
+  view:
+    list: $/mercator/uploader/models/uploaduser/columns.yaml
+    toolbarPartial: $/mercator/uploader/controllers/uploadforms/_relation_toolbar_users.htm
+    toolbarButtons: add|remove
+    showSearch: true
+  manage:
+    form: $/mercator/uploader/models/uploaduser/fields.yaml
+    recordsPerPage: 20
+  pivot: false
+

@@ -71,7 +71,7 @@ tabs:
       tab: Pre-Processing
       span: left
       default: true
-      
+
     client_resize_enabled:
       label: Enable client-side resize/compress
       type: switch
@@ -115,13 +115,13 @@ tabs:
         action: show
         field: client_resize_enabled
         condition: checked
-    
+
     preserve_exif:
-      label: Preservation of EXIF Metadata 
+      label: Preservation of EXIF Metadata
       type: switch
       tab: Restrictions
       default: false
-      
+
     section_filesize:
       label: Upload Size Restrictions
       type: section
@@ -147,4 +147,30 @@ tabs:
       attributes:
         min: 0
         step: 1
-        
+
+    restricted:
+      label: Restrict access to specific users
+      type: switch
+      span: left
+      default: false
+      tab: Users
+      comment: Only users from the list with ?user=<token> can open & upload.
+
+    users:
+      label: Users
+      type: relation
+      tab: Users
+      span: full
+      deferredBinding: true
+      view:
+        list: $/mercator/uploader/models/uploaduser/columns.yaml
+        toolbarButtons: add|create|remove
+        showSearch: true
+      manage:
+        form: $/mercator/uploader/models/uploaduser/fields.yaml
+        list: $/mercator/uploader/models/uploaduser/columns.yaml
+        recordsPerPage: 20
+      trigger:
+        action: show
+        field: restricted
+        condition: checked

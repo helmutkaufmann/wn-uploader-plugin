@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Mercator\Uploader\Models\UploadForm;
+use Mercator\Uploader\Models\UploadUser;
 use Log;
 
 class FrontendController
@@ -14,6 +15,25 @@ class FrontendController
         $form = UploadForm::where('form_id', $id)->first();
         if (!$form) {
             return response("Upload form not found.", 404);
+        }
+
+        // If restricted, require a valid ?user=TOKEN belonging to this form and active
+        if ($form->restricted) {
+            $token = request()->query('user');
+            $user = $token
+                ? UploadUser::where('token', $token)
+                    ->where('upload_form_id', $form->id)
+                    ->where('is_active', true)
+                    ->first()
+                : null;
+
+            if (!$user) {
+                Log::info("Mercator.Uploader: access denied (show) for form {$form->id} with token " . ($token ?: 'NULL'));
+                return response("Access denied.", 403);
+            }
+
+            $user->last_accessed_at = now();
+            $user->save();
         }
 
         return view('mercator.uploader::upload', [
@@ -27,6 +47,25 @@ class FrontendController
         $form = UploadForm::where('form_id', $id)->first();
         if (!$form) {
             return response()->json(['error' => 'Invalid form'], 404);
+        }
+
+        // If restricted, require a valid ?user=TOKEN belonging to this form and active
+        if ($form->restricted) {
+            $token = request()->query('user');
+            $user = $token
+                ? UploadUser::where('token', $token)
+                    ->where('upload_form_id', $form->id)
+                    ->where('is_active', true)
+                    ->first()
+                : null;
+
+            if (!$user) {
+                Log::info("Mercator.Uploader: access denied (upload) for form {$form->id} with token " . ($token ?: 'NULL'));
+                return response()->json(['error' => 'Access denied'], 403);
+            }
+
+            $user->last_accessed_at = now();
+            $user->save();
         }
 
         // --- Check upload window ---
@@ -66,7 +105,7 @@ class FrontendController
 
             // Check allowed types
             if (!in_array($ext, $allowed)) {
-                 Log::info("Mercator.Uploader: File type $ext not allowed, error 415");
+                Log::info("Mercator.Uploader: File type $ext not allowed, error 415");
                 return response()->json([
                     'error' => "File type .$ext not allowed"
                 ], 415);

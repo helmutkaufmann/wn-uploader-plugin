@@ -1,0 +1,14 @@
+<h3>Hello {{ name }},</h3>
+
+<p>You have been invited to upload files to <strong>{{ form.title }}</strong>.</p>
+
+{% if form.description %}
+<p>{{ form.description|raw }}</p>
+{% endif %}
+
+<p>
+  Click here to open the uploader:<br>
+  <a href="{{ url }}">{{ url }}</a>
+</p>
+
+<p>Thank you.</p>

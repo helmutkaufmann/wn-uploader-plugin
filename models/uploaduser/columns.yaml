@@ -1,0 +1,16 @@
+# ===================================
+#  UploadUser List Columns
+# ===================================
+columns:
+    name:
+        label: Name
+        searchable: true
+    email:
+        label: Email
+        searchable: true
+    is_active:
+        label: Active
+        type: switch
+    token:
+        label: Token
+        searchable: true
