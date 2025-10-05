@@ -3,21 +3,21 @@
 # ===================================
 
 fields:
-    form_id:
-        label: Form ID
-        type: text
-        span: left
-        readOnly: true
     title:
         label: Title
         type: text
+        span: left
+    form_id:
+        label: Form ID
+        type: text
         span: right
+        readOnly: true
     description:
         label: Description
         type: textarea
         size: large
     upload_dir:
-        label: Resizing Directory
+        label: Upload Directory
         type: mediafinder
         mode: folder 
         span: left
@@ -25,21 +25,23 @@ fields:
         label: Allowed File Types
         type: text
         span: right
-        default: jpg,png,pdf
+        default: jpg,png,jpeg,gif,bmp,tif,tiff,webp
     start_date:
-        label: Start DateTime
+        label: Start Date and Time
         type: datepicker
         mode: datetime
         useTimezone: false          # no auto conversion
         span: left
         default: 2025-01-01 00:00:00
+        comment: Date and time the upload interface becomes available.
     end_date:
-        label: End DateTime
+        label: End Date and Time
         type: datepicker
         mode: datetime
         useTimezone: false
         span: right
         default: 2099-12-31 23:59:59
+        comment: Date and time the upload interface becomes unavailable.
     timezone:
         label: Timezone
         type: dropdown
@@ -105,9 +107,4 @@ tabs:
                 step: 0.05
                 min: 0
                 max: 1
-        
-        section_2:
-            label: Misc
-            type: section
-            tab: Pre-Proessing
 
