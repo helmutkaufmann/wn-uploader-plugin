@@ -7,4 +7,7 @@
 1.1.1:
     - 'Add per-form auto upload toggle'
     - 01_01_01_add_auto_upload_flag.php
+1.1.6:
+    - Add EXIF preservation, upload limits, and ImageEditor option
+    - 01_01_06_add_upload_limits_and_exif_to_upload_forms.php
 

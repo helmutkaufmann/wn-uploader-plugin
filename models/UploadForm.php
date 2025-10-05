@@ -20,7 +20,7 @@ class UploadForm extends Model
     public $fillable = [
     'form_id','title','description','upload_dir','allowed_types',
     'start_date','end_date','timezone',
-    'client_resize_enabled','client_resize_max_width','client_resize_max_height','client_resize_quality','auto_upload_enabled'
+    'client_resize_enabled','client_resize_max_width','client_resize_max_height','client_resize_quality','auto_upload_enabled', 'preserve_exif', 'max_file_size', 'max_total_file_size', 'use_image_editor'
 ];
 
 public $attributes = [

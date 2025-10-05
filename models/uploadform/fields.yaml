@@ -107,4 +107,32 @@ tabs:
                 step: 0.05
                 min: 0
                 max: 1
+        section_2:
+                label: Misc
+                type:section    
+        preserve_exif:
+            label: Preserve EXIF metadata
+            type: switch
+            tab: Uppy Settings
+            comment: 'ImageEditor outputs via canvas and strips EXIF by design.'
+            default: false
 
+        use_image_editor:
+            label: Enable Uppy Image Editor
+            type: switch
+            tab: Uppy Settings
+            default: true
+
+        max_file_size:
+            label: Max File Size (MB)
+            type: number
+            tab: Uppy Settings
+            default: 0
+            comment: Set 0 for unlimited
+
+        max_total_file_size:
+            label: Max Total Upload Size (MB)
+            type: number
+            tab: Uppy Settings
+            default: 0
+            comment: Set 0 for unlimited
