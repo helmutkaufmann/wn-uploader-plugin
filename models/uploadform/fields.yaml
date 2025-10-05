@@ -148,13 +148,18 @@ tabs:
         min: 0
         step: 1
 
+    section_users:
+      label: User Access Control
+      type: section
+      tab: Users
+
     restricted:
       label: Restrict access to specific users
       type: switch
       span: left
       default: false
       tab: Users
-      comment: Only users from the list with ?user=<token> can open & upload.
+      comment: Only users from the list with ?user=<token> can open and upload.
 
     users:
       label: Users
@@ -162,15 +167,13 @@ tabs:
       tab: Users
       span: full
       deferredBinding: true
+      dependsOn:
+        - restricted
       view:
         list: $/mercator/uploader/models/uploaduser/columns.yaml
         toolbarButtons: add|create|remove
-        showSearch: true
+        #  showSearch: true
       manage:
         form: $/mercator/uploader/models/uploaduser/fields.yaml
         list: $/mercator/uploader/models/uploaduser/columns.yaml
         recordsPerPage: 20
-      trigger:
-        action: show
-        field: restricted
-        condition: checked

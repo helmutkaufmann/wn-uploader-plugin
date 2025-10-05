@@ -14,7 +14,7 @@ list:
     columns:
         form_id:
             label: Form ID
-            searchable: false
+            searchable: true
         title:
             label: Title
             searchable: true

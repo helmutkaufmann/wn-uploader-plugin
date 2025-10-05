@@ -72,9 +72,13 @@ class UploadForm extends Model
     ];
 
     public $hasMany = [
-    'users' => [\Mercator\Uploader\Models\UploadUser::class, 'key' => 'upload_form_id'],
-    ];
-
+    'users' => [
+        \Mercator\Uploader\Models\UploadUser::class,
+        'key' => 'upload_form_id',
+        'otherKey' => 'id',
+        'delete' => true,
+    ],
+];
     public function beforeCreate()
     {
         if (!$this->form_id) {

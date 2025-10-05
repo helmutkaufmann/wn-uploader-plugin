@@ -1,18 +1,11 @@
 <?php namespace Mercator\Uploader\Models;
 
 use Model;
-use Winter\Storm\Database\Traits\Validation;
 
 class UploadUser extends Model
 {
-    use Validation;
-
     protected $table = 'mercator_uploader_users';
-
-    public $rules = [
-        'email' => 'required|email',
-    ];
-
+    public $timestamps = true;
     protected $fillable = [
         'upload_form_id', 'token', 'name', 'email', 'is_active',
         'invited_at', 'last_accessed_at',
@@ -25,7 +18,7 @@ class UploadUser extends Model
     public function beforeCreate()
     {
         if (!$this->token) {
-            $this->token = bin2hex(random_bytes(16)); // 32 chars
+            $this->token = bin2hex(random_bytes(16));
         }
     }
 }

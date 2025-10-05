@@ -1,16 +1,16 @@
 # ===================================
-#  UploadUser List Columns
+#  UploadUser list columns
 # ===================================
 columns:
-    name:
-        label: Name
-        searchable: true
-    email:
-        label: Email
-        searchable: true
-    is_active:
-        label: Active
-        type: switch
-    token:
-        label: Token
-        searchable: true
+  token:
+    label: Token
+    searchable: true
+  name:
+    label: Name
+    searchable: true
+  email:
+    label: Email
+    searchable: true
+  is_active:
+    label: Active
+    type: switch

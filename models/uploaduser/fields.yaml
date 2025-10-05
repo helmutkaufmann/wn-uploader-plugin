@@ -17,9 +17,3 @@ fields:
         type: switch
         span: left
         default: true
-
-    token:
-        label: Token
-        type: text
-        readOnly: true
-        span: right
