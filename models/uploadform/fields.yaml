@@ -3,136 +3,142 @@
 # ===================================
 
 fields:
-    title:
-        label: Title
-        type: text
-        span: left
-    form_id:
-        label: Form ID
-        type: text
-        span: right
-        readOnly: true
-    description:
-        label: Description
-        type: textarea
-        size: large
-    upload_dir:
-        label: Upload Directory
-        type: mediafinder
-        mode: folder 
-        span: left
-    allowed_types:
-        label: Allowed File Types
-        type: text
-        span: right
-        default: jpg,png,jpeg,gif,bmp,tif,tiff,webp
-    start_date:
-        label: Start Date and Time
-        type: datepicker
-        mode: datetime
-        useTimezone: false          # no auto conversion
-        span: left
-        default: 2025-01-01 00:00:00
-        comment: Date and time the upload interface becomes available.
-    end_date:
-        label: End Date and Time
-        type: datepicker
-        mode: datetime
-        useTimezone: false
-        span: right
-        default: 2099-12-31 23:59:59
-        comment: Date and time the upload interface becomes unavailable.
-    timezone:
-        label: Timezone
-        type: dropdown
-        options: getTimezoneOptions
-        span: left
-        default: Europe/Zurich
-        
-    auto_upload_enabled:
-        label: Auto-upload files immediately
-        type: switch
-        span: right
-        default: true
-        comment: "If enabled files are uploaded as they are dropped by the user."
-        
+  title:
+    label: Title
+    type: text
+    span: left
+
+  form_id:
+    label: Form ID
+    type: text
+    span: right
+    readOnly: true
+
+  description:
+    label: Description
+    type: textarea
+    size: large
+
+  upload_dir:
+    label: Upload Directory
+    type: mediafinder
+    mode: folder
+    span: left
+
+  allowed_types:
+    label: Allowed File Types
+    type: text
+    span: right
+    default: jpg,png,jpeg,gif,bmp,tif,tiff,webp
+
+  start_date:
+    label: Start Date and Time
+    type: datepicker
+    mode: datetime
+    useTimezone: false
+    span: left
+    default: 2025-01-01 00:00:00
+    comment: Date and time the upload interface becomes available.
+
+  end_date:
+    label: End Date and Time
+    type: datepicker
+    mode: datetime
+    useTimezone: false
+    span: right
+    default: 2099-12-31 23:59:59
+    comment: Date and time the upload interface becomes unavailable.
+
+  timezone:
+    label: Timezone
+    type: dropdown
+    options: getTimezoneOptions
+    span: left
+    default: Europe/Zurich
+
+  auto_upload_enabled:
+    label: Auto-upload files immediately
+    type: switch
+    span: right
+    default: true
+    comment: "If enabled, files are uploaded as they are dropped by the user."
 
 tabs:
-    fields:
-        section_1:
-            label: Resizing
-            type: section
-            tab: Pre-Proessing
+  fields:
+    use_image_editor:
+      label: Enable Uppy Image Editor
+      type: switch
+      tab: Pre-Processing
+      span: left
+      default: true
+      
+    client_resize_enabled:
+      label: Enable client-side resize/compress
+      type: switch
+      tab: Pre-Processing
+      span: left
+      default: false
 
-        client_resize_enabled:
-            label: Enable client-side resize/compress
-            type: switch
-            tab: Pre-Proessing
-            span: left
-            default: false
+    client_resize_max_width:
+      label: Max width (px)
+      type: number
+      tab: Pre-Processing
+      span: left
+      default: 1920
+      trigger:
+        action: show
+        field: client_resize_enabled
+        condition: checked
 
-        client_resize_max_width:
-            label: Max width (px)
-            type: number
-            tab: Pre-Proessing
-            span: left
-            default: 1920
-            trigger:
-                action: show
-                field: client_resize_enabled
-                condition: checked
+    client_resize_max_height:
+      label: Max height (px)
+      type: number
+      tab: Pre-Processing
+      span: right
+      default: 1080
+      trigger:
+        action: show
+        field: client_resize_enabled
+        condition: checked
 
-        client_resize_max_height:
-            label: Max height (px)
-            type: number
-            tab: Pre-Proessing
-            span: right
-            default: 1080
-            trigger:
-                action: show
-                field: client_resize_enabled
-                condition: checked
-            
-        client_resize_quality:
-            label: JPEG/WebP Quality (0.0–1.0)
-            type: number
-            tab: Pre-Proessing
-            span: left
-            default: 0.8
-            trigger:
-                action: show
-                field: client_resize_enabled
-                condition: checked
-            attributes:
-                step: 0.05
-                min: 0
-                max: 1
-        section_2:
-                label: Misc
-                type:section    
-        preserve_exif:
-            label: Preserve EXIF metadata
-            type: switch
-            tab: Uppy Settings
-            comment: 'ImageEditor outputs via canvas and strips EXIF by design.'
-            default: false
+    client_resize_quality:
+      label: JPEG/WebP Quality (0.0–1.0)
+      type: number
+      tab: Pre-Processing
+      span: left
+      default: 0.8
+      attributes:
+        step: 0.05
+        min: 0
+        max: 1
+      trigger:
+        action: show
+        field: client_resize_enabled
+        condition: checked
+    
+    preserve_exif:
+      label: Preserve EXIF Metadata 
+      type: switch
+      tab: Restrictions
+      default: false
 
-        use_image_editor:
-            label: Enable Uppy Image Editor
-            type: switch
-            tab: Uppy Settings
-            default: true
+    max_file_size:
+      label: Maximum File Size (MB)
+      type: number
+      tab: Restrictions
+      default: 0
+      comment: Set 0 or leave empty for unlimited.
+      attributes:
+        min: 0
+        step: 1
 
-        max_file_size:
-            label: Max File Size (MB)
-            type: number
-            tab: Uppy Settings
-            default: 0
-            comment: Set 0 for unlimited
-
-        max_total_file_size:
-            label: Max Total Upload Size (MB)
-            type: number
-            tab: Uppy Settings
-            default: 0
-            comment: Set 0 for unlimited
+    max_total_file_size:
+      label: Maximum Total Upload Size (MB)
+      type: number
+      tab: Restrictions
+      default: 0
+      comment: Set 0 or leave empty for unlimited.
+      attributes:
+        min: 0
+        step: 1
+        

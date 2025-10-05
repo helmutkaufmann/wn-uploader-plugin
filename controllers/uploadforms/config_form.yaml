@@ -17,4 +17,3 @@ update:
     title: Update Upload Form
     redirect: mercator/uploader/uploadforms
     redirectClose: mercator/uploader/uploadforms
-

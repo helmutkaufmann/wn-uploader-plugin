@@ -61,72 +61,85 @@ fields:
     </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // const token = "{{ form_token() }}";
-        // Build endpoint from current path or from the form_id
-        // If the page URL already ends with .../<id>, we append /upload.
-        // Otherwise, fall back to /mercator/uploader/<id>/upload.
-        const currentPath = window.location.pathname.replace(/\/+$/, '');
-        const formId = {{ form.form_id|json_encode|raw }};
-        const endpoint = currentPath.match(new RegExp(formId + '$'))
-            ? currentPath + '/upload'
-            : '/mercator/uploader/' + formId + '/upload';
+document.addEventListener("DOMContentLoaded", function() {
+    // Build endpoint
+    const currentPath = window.location.pathname.replace(/\/+$/, '');
+    const formId = {{ form.form_id|json_encode|raw }};
+    const endpoint = currentPath.match(new RegExp(formId + '$'))
+        ? currentPath + '/upload'
+        : '/mercator/uploader/' + formId + '/upload';
 
-        // Allowed extensions as ['.jpg','.png', ...]
-        const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
-        const allowedTypes = allowedTypesStr
-            ? allowedTypesStr.split(',').map(s => s.trim()).filter(Boolean)
-            : null;
+    // Allowed file types (as .ext)
+    const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
+    const allowedTypes = allowedTypesStr
+        ? allowedTypesStr.split(',').map(s => s.trim()).filter(Boolean)
+        : null;
 
-        const uppy = new Uppy.Uppy({
-            autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
-            allowMultipleUploadBatches: true,
-            restrictions: {
-                maxNumberOfFiles: null,
-                allowedFileTypes: allowedTypes
-            }
-        })
-        .use(Uppy.Dashboard, {
-            inline: true,
-            target: '#uppy',
-            proudlyDisplayPoweredByUppy: false,
-            showProgressDetails: false,
-            note: allowedTypes ? ('Allowed: ' + allowedTypes.join(' ')) : ''
-        })
-        .use(Uppy.Webcam)
-        .use(Uppy.Audio)
-        .use(Uppy.ScreenCapture)
-        .use(Uppy.ImageEditor, {
-            target: Uppy.Dashboard
-        })
-        {% if form.client_resize_enabled %}
-            .use(Uppy.Compressor, {
-                quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
-                maxWidth: {{ form.client_resize_max_width ?? 1920 }},
-                maxHeight: {{ form.client_resize_max_height ?? 1080 }},
-                // convertTypes: [],
-                preserveExif: true
-            })
-        {% endif %}
-        .use(Uppy.XHRUpload, {
-            endpoint: endpoint,
-            fieldName: 'file',
-            formData: true,
-            // headers: { 'X-CSRF-TOKEN': token },
-            allowMultipleUploads: true
-        });
+    // Convert MB to bytes, or null if not set
+    const maxFileSize = {{ form.max_file_size and form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }};
+    const maxTotalFileSize = {{ form.max_total_file_size and form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }};
 
-        uppy.on('complete', () => {
-            UIkit.notification({ message: 'Upload complete', status: 'success' });
-        });
+    const notes = [];
+    if (allowedTypes) notes.push('Allowed: ' + allowedTypes.join(' '));
+    if (maxFileSize !== null) notes.push('Max per file: {{ form.max_file_size }} MB');
+    if (maxTotalFileSize !== null) notes.push('Total: {{ form.max_total_file_size }} MB');
 
-        uppy.on('upload-error', (file, error, response) => {
-            let msg = 'Upload failed';
-            if (response && response.body && response.body.error) msg = response.body.error;
-            else if (error && error.message) msg = error.message;
-            UIkit.notification({ message: msg, status: 'danger' });
-        });
+    const uppy = new Uppy.Uppy({
+        autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
+        allowMultipleUploadBatches: true,
+        restrictions: {
+            maxNumberOfFiles: null,
+            allowedFileTypes: allowedTypes,
+            maxFileSize: (maxFileSize === 'null') ? null : maxFileSize,
+            maxTotalFileSize: (maxTotalFileSize === 'null') ? null : maxTotalFileSize
+        }
+    })
+    .use(Uppy.Dashboard, {
+        inline: true,
+        target: '#uppy',
+        proudlyDisplayPoweredByUppy: false,
+        showProgressDetails: true,
+        note: notes.join(' | ')
+    })
+    {% if form.use_image_editor %}
+    .use(Uppy.ImageEditor)
+    {% endif %}
+    {% if form.client_resize_enabled %}
+    .use(Uppy.Compressor, {
+        quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
+        maxWidth: {{ form.client_resize_max_width ?? 1920 }},
+        maxHeight: {{ form.client_resize_max_height ?? 1080 }},
+        preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+    })
+    {% endif %}
+    .use(Uppy.Webcam)
+    .use(Uppy.Audio)
+    .use(Uppy.ScreenCapture)
+    .use(Uppy.XHRUpload, {
+        endpoint: endpoint,
+        fieldName: 'file',
+        formData: true,
+        allowMultipleUploads: true
     });
-    </script>
+
+    // Notify success
+    uppy.on('complete', () => {
+        UIkit.notification({ message: 'Upload complete', status: 'success' });
+    });
+
+    // Notify upload error
+    uppy.on('upload-error', (file, error, response) => {
+        let msg = 'Upload failed';
+        if (response && response.body && response.body.error) msg = response.body.error;
+        else if (error && error.message) msg = error.message;
+        UIkit.notification({ message: msg, status: 'danger' });
+    });
+
+    // Notify restriction failures (size/type)
+    uppy.on('restriction-failed', (file, error) => {
+        UIkit.notification({ message: error, status: 'warning' });
+    });
+});
+</script>
 
 {% endif %}

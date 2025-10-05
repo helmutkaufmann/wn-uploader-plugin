@@ -34,18 +34,22 @@
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const endpoint = window.location.pathname.replace(/\/$/, '') + '/upload';
 
+const maxFileSize = {{ form.max_file_size and form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }};
+const maxTotalFileSize = {{ form.max_total_file_size and form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }};
+
 const uppy = new Uppy.Uppy({
     autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
     restrictions: {
         maxNumberOfFiles: null,
-        maxFileSize: {{ form.max_file_size and form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }},
-        maxTotalFileSize: {{ form.max_total_file_size and form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }}
+        maxFileSize: (maxFileSize === 'null') ? null : maxFileSize,
+        maxTotalFileSize: (maxTotalFileSize === 'null') ? null : maxTotalFileSize
     }
 })
 .use(Uppy.Dashboard, {
     inline: true,
     target: '#uppy',
-    proudlyDisplayPoweredByUppy: false
+    proudlyDisplayPoweredByUppy: false,
+    
 })
 {% if form.use_image_editor %}
 .use(Uppy.ImageEditor)
@@ -56,16 +60,16 @@ const uppy = new Uppy.Uppy({
     maxWidth: {{ form.client_resize_max_width ?? 1920 }},
     maxHeight: {{ form.client_resize_max_height ?? 1080 }},
     preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
-}).
+})
 {% endif %}
-         .use(Uppy.Webcam)
-         .use(Uppy.Audio)
-        .use(Uppy.XHRUpload, {
-            endpoint: endpoint,
-            fieldName: 'file',
-            formData: true,
-            headers: { 'X-CSRF-TOKEN': token }
-        });
+.use(Uppy.Webcam)
+.use(Uppy.Audio)
+.use(Uppy.XHRUpload, {
+    endpoint: endpoint,
+    fieldName: 'file',
+    formData: true,
+    headers: { 'X-CSRF-TOKEN': token }
+});
 
         uppy.on('complete', () => {
             UIkit.notification({ message: 'Upload complete', status: 'success' });

@@ -18,11 +18,6 @@ list:
         title:
             label: Title
             searchable: true
-        upload_dir:
-            label: Directory
-            searchable: true
-        allowed_types:
-            label: Types
         start_date:
             label: Start
             type: datetime
@@ -34,13 +29,10 @@ list:
         timezone:
             label: Timezone
             default: Europe/Zurich
-        client_resize_enabled:
-            label: Client Resize
-            type: switch
-        client_resize_max_width:
-            label: Max W
-        client_resize_max_height:
-            label: Max H
-        client_resize_quality:
-            label: Quality
+        allowed_types:
+            label: Types
+        upload_dir:
+            label: Directory
+            searchable: true
+        
 

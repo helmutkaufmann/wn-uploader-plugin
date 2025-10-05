@@ -3,7 +3,9 @@
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 use Mercator\Uploader\Models\UploadForm;
+use Log;
 
 class FrontendController
 {
@@ -27,37 +29,96 @@ class FrontendController
             return response()->json(['error' => 'Invalid form'], 404);
         }
 
+        // --- Check upload window ---
         $tz = new \DateTimeZone($form->timezone ?: 'UTC');
         $now = Carbon::now($tz);
         $start = Carbon::parse($form->start_date, $tz);
         $end   = Carbon::parse($form->end_date, $tz);
+
         if (!$now->betweenIncluded($start, $end)) {
             return response()->json(['error' => 'Uploads not allowed at this time.'], 403);
         }
 
-        $file = request()->file('file');
-        if (!$file || !$file->isValid()) {
-            return response()->json(['error' => 'No file uploaded or invalid upload'], 400);
+        // --- Validate file(s) ---
+        $files = request()->file('file');
+        if (!$files) {
+            return response()->json(['error' => 'No files uploaded.'], 400);
         }
+        $files = is_array($files) ? $files : [$files];
 
         $allowed = array_filter(array_map('trim', explode(',', strtolower($form->allowed_types))));
-        $ext = strtolower($file->getClientOriginalExtension());
-        if (!in_array($ext, $allowed)) {
-            return response()->json(['error' => 'File type not allowed'], 400);
+        $maxFileSize      = ($form->max_file_size && $form->max_file_size > 0)
+            ? $form->max_file_size * 1024 * 1024 : null;
+        $maxTotalFileSize = ($form->max_total_file_size && $form->max_total_file_size > 0)
+            ? $form->max_total_file_size * 1024 * 1024 : null;
+
+        $totalSize = 0;
+        $stored = [];
+
+        foreach ($files as $file) {
+            if (!$file->isValid()) {
+                Log::info("Mercator.Uploader: Invalid file upload, error 400");
+                return response()->json(['error' => 'Invalid file upload.'], 400);
+            }
+
+            $size = $file->getSize();
+            $ext = strtolower($file->getClientOriginalExtension());
+
+            // Check allowed types
+            if (!in_array($ext, $allowed)) {
+                 Log::info("Mercator.Uploader: File type $ext not allowed, error 415");
+                return response()->json([
+                    'error' => "File type .$ext not allowed"
+                ], 415);
+            }
+
+            // Check file size
+            if ($maxFileSize && $size > $maxFileSize) {
+                Log::info("Mercator.Uploader: File exceeds maximum size ($size), error 413");
+                return response()->json([
+                    'error' => sprintf(
+                        "File %s exceeds the maximum size of %.1f MB.",
+                        $file->getClientOriginalName(),
+                        $form->max_file_size
+                    )
+                ], 413);
+            }
+
+            $totalSize += $size;
         }
 
-        $safeName  = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-        $finalName = uniqid() . '_' . $safeName . '.' . $ext;
+        // Check total size
+        if ($maxTotalFileSize && $totalSize > $maxTotalFileSize) {
+            Log::info("Mercator.Uploader: Files exceed total maximum size ($totalSize)");
+            return response()->json([
+                'error' => sprintf(
+                    "Total upload size (%.1f MB) exceeds the maximum allowed of %.1f MB.",
+                    $totalSize / 1024 / 1024,
+                    $form->max_total_file_size
+                )
+            ], 413);
+        }
 
+        // --- Save to /storage/app/media/<upload_dir> ---
         $dir = trim($form->upload_dir ?: 'uploader', '/');
         $path = 'media/' . $dir;
 
-        // Ensure directory exists and store under storage/app/media/<dir>
         if (!Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->makeDirectory($path);
+            Storage::disk('local')->makeDirectory($path, 0775, true);
         }
-        $storedPath = $file->storeAs($path, $finalName, 'local');
 
-        return response()->json(['success' => true, 'path' => $storedPath]);
+        foreach ($files as $file) {
+            $safeName  = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+            $ext       = strtolower($file->getClientOriginalExtension());
+            $finalName = uniqid() . '_' . $safeName . '.' . $ext;
+            $storedPath = $file->storeAs($path, $finalName, 'local');
+            $stored[] = $storedPath;
+        }
+
+        return response()->json([
+            'success' => true,
+            'count'   => count($stored),
+            'files'   => $stored,
+        ]);
     }
 }
