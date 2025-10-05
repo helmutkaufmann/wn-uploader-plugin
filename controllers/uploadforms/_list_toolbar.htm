@@ -1,32 +1,24 @@
 <div data-control="toolbar">
-
-    <!-- Create new upload form -->
     <a
         href="<?= Backend::url('mercator/uploader/uploadforms/create') ?>"
         class="btn btn-primary wn-icon-plus">
         New Upload Form
     </a>
 
-    <!-- Delete selected upload forms -->
-    <button
-        type="button"
-        class="btn btn-danger wn-icon-trash"
-        data-request="onBulkDelete"
-        data-request-confirm="Delete all selected upload forms? This cannot be undone."
-        data-list-checked-request
-        data-request-data="list: 'list'"
-        data-stripe-load-indicator>
-        Delete selected
-    </button>
+<button
+  type="button"
+  class="btn btn-danger wn-icon-trash"
+  data-request="onBulkDelete"
+  data-request-data="checked: $('.control-list').data('oc.list').getChecked()"
+  data-request-confirm="Delete all selected upload forms? This cannot be undone."
+  data-request-flash>
+  Delete selected
+</button>
 
-    <!-- Refresh list -->
     <button
         type="button"
         class="btn btn-secondary wn-icon-refresh"
-        data-request="onRefresh"
-        data-stripe-load-indicator>
+        data-request="onRefresh">
         Refresh
     </button>
-
 </div>
-

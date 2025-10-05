@@ -117,17 +117,23 @@ tabs:
         condition: checked
     
     preserve_exif:
-      label: Preserve EXIF Metadata 
+      label: Preservation of EXIF Metadata 
       type: switch
       tab: Restrictions
       default: false
+      
+    section_filesize:
+      label: Upload Size Restrictions
+      type: section
+      tab: Restrictions
+      comment: Set 0 or leave empty for unlimited.
 
     max_file_size:
       label: Maximum File Size (MB)
       type: number
       tab: Restrictions
       default: 0
-      comment: Set 0 or leave empty for unlimited.
+      span: left
       attributes:
         min: 0
         step: 1
@@ -137,7 +143,7 @@ tabs:
       type: number
       tab: Restrictions
       default: 0
-      comment: Set 0 or leave empty for unlimited.
+      span: right
       attributes:
         min: 0
         step: 1
