@@ -9,4 +9,3 @@ users:
     form: $/mercator/uploader/models/uploaduser/fields.yaml
     recordsPerPage: 20
   pivot: false
-

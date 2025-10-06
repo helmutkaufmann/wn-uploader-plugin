@@ -167,12 +167,10 @@ tabs:
       tab: Users
       span: full
       deferredBinding: true
-      dependsOn:
-        - restricted
       view:
         list: $/mercator/uploader/models/uploaduser/columns.yaml
         toolbarButtons: add|create|remove
-        #  showSearch: true
+        showSearch: true
       manage:
         form: $/mercator/uploader/models/uploaduser/fields.yaml
         list: $/mercator/uploader/models/uploaduser/columns.yaml

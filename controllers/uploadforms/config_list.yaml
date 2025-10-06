@@ -1,38 +1,13 @@
-modelClass: Mercator\Uploader\Models\UploadForm
+# ===================================
+#  List Config
+# ===================================
 title: Upload Forms
+modelClass: Mercator\Uploader\Models\UploadForm
+list: $/mercator/uploader/models/uploadform/columns.yaml
 recordUrl: mercator/uploader/uploadforms/update/:id
-recordsPerPage: 50
+recordsPerPage: 25
 showCheckboxes: true
-
 toolbar:
     buttons: list_toolbar
     search:
         prompt: Search forms
-
-# Columns (provided inline under "list")
-list:
-    columns:
-        form_id:
-            label: Form
-            searchable: true
-        title:
-            label: Title
-            searchable: true
-        start_date:
-            label: Start Date and Time
-            type: datetime
-            format: Y-m-d H:i
-        end_date:
-            label: End Date and Time
-            type: datetime
-            format: Y-m-d H:i
-        timezone:
-            label: Timezone
-            default: Europe/Zurich
-        upload_dir:
-            label: Directory
-            searchable: true
-        allowed_types:
-            label: Types
-        
-

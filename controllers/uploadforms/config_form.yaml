@@ -1,7 +1,6 @@
 # ===================================
 #  Form Behavior Config
 # ===================================
-
 name: Upload Form
 modelClass: Mercator\Uploader\Models\UploadForm
 form: $/mercator/uploader/models/uploadform/fields.yaml

@@ -6,12 +6,10 @@ fields:
         label: Name
         type: text
         span: left
-
     email:
         label: Email
         type: text
         span: right
-
     is_active:
         label: Active
         type: switch

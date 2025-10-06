@@ -1,21 +1,23 @@
-name: File and Image Uploader
+name: Uploader
 author: Helmut Kaufmann
-description: Shows an Uppy-powered upload form for a given Upload Form ID (or :id from the URL)
+description: Uploader for backd-defined Upload Form
 tags: ["pages","upload"]
 fields:
     form_id:
         label: Form ID (optional)
         type: text
         span: left
+        comment: If left blank, the block expects the URL to contain a ?id=XXX and will render form XXX.
     text_position:
-        label: Title / Description position
+        label: Title and Description Position
         type: dropdown
         default: above
         span: right
         options:
             none: Do not render
-            above: Above uploader
-            below: Below uploader
+            above: Above uploader widget
+            below: Below uploader widget
+        comment: Defines the position or absence of the title and description (as defind in the backend).
 ==
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
@@ -29,18 +31,21 @@ fields:
     </div>
 {% else %}
 
-    {# Uppy #}
-    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
-    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
-
-    <style>
-        /* Make Uppy Dashboard full width */
-        .uppy-Dashboard,
-        .uppy-Dashboard-inner {
-            max-width: 100% !important;
-            width: 100% !important;
-        }
-    </style>
+    {% put scripts %}
+        {# Uppy script #}
+        <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+        
+        {# Include styles here as {% styles %} will be rendered before the block is rendered  #}
+        <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+        <style>
+            /* Make Uppy Dashboard full width */
+            .uppy-Dashboard,
+            .uppy-Dashboard-inner {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+        </style>
+    {% endput %}
 
     <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
@@ -62,84 +67,84 @@ fields:
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-        // Build endpoint
-        const currentPath = window.location.pathname.replace(/\/+$/, '');
-        const formId = {{ form.form_id|json_encode|raw }};
-        const endpoint = currentPath.match(new RegExp(formId + '$'))
-            ? currentPath + '/upload'
-            : '/mercator/uploader/' + formId + '/upload';
+            // Build endpoint
+            const currentPath = window.location.pathname.replace(/\/+$/, '');
+            const formId = {{ form.form_id|json_encode|raw }};
+            const endpoint = currentPath.match(new RegExp(formId + '$'))
+                ? currentPath + '/upload'
+                : '/mercator/uploader/' + formId + '/upload';
 
-        // Allowed file types (as .ext)
-        const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
-        const allowedTypes = allowedTypesStr
-            ? allowedTypesStr.split(',').map(s => s.trim()).filter(Boolean)
-            : null;
+            // Allowed file types (as .ext)
+            const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
+            const allowedTypes = allowedTypesStr
+                ? allowedTypesStr.split(',').map(s => s.trim()).filter(Boolean)
+                : null;
 
-        // Convert MB to bytes, or null if not set
-        const maxFileSize = {{ form.max_file_size and form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }};
-        const maxTotalFileSize = {{ form.max_total_file_size and form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }};
+            // Convert MB to bytes, or null if not set
+            const maxFileSize = {{ form.max_file_size and form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }};
+            const maxTotalFileSize = {{ form.max_total_file_size and form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }};
 
-        const notes = [];
-        if (allowedTypes) notes.push('Allowed: ' + allowedTypes.join(' '));
-        if (maxFileSize !== null) notes.push('Max per file: {{ form.max_file_size }} MB');
-        if (maxTotalFileSize !== null) notes.push('Total: {{ form.max_total_file_size }} MB');
+            const notes = [];
+            if (allowedTypes) notes.push('Allowed: ' + allowedTypes.join(' '));
+            if (maxFileSize !== null) notes.push('Max per file: {{ form.max_file_size }} MB');
+            if (maxTotalFileSize !== null) notes.push('Total: {{ form.max_total_file_size }} MB');
 
-        const uppy = new Uppy.Uppy({
-            autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
-            allowMultipleUploadBatches: true,
-            restrictions: {
-                maxNumberOfFiles: null,
-                allowedFileTypes: allowedTypes,
-                maxFileSize: (maxFileSize === 'null') ? null : maxFileSize,
-                maxTotalFileSize: (maxTotalFileSize === 'null') ? null : maxTotalFileSize
-            }
-        })
-        .use(Uppy.Dashboard, {
-            inline: true,
-            target: '#uppy',
-            proudlyDisplayPoweredByUppy: false,
-            showProgressDetails: true,
-            note: notes.join(' | ')
-        })
-        {% if form.use_image_editor %}
-        .use(Uppy.ImageEditor)
-        {% endif %}
-        {% if form.client_resize_enabled %}
-            .use(Uppy.Compressor, {
-                quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
-                maxWidth: {{ form.client_resize_max_width ?? 1920 }},
-                maxHeight: {{ form.client_resize_max_height ?? 1080 }},
-                preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+            const uppy = new Uppy.Uppy({
+                autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
+                allowMultipleUploadBatches: true,
+                restrictions: {
+                    maxNumberOfFiles: null,
+                    allowedFileTypes: allowedTypes,
+                    maxFileSize: (maxFileSize === 'null') ? null : maxFileSize,
+                    maxTotalFileSize: (maxTotalFileSize === 'null') ? null : maxTotalFileSize
+                }
             })
-        {% endif %}
-        .use(Uppy.Webcam)
-        .use(Uppy.Audio)
-        .use(Uppy.ScreenCapture)
-        .use(Uppy.XHRUpload, {
-            endpoint: endpoint,
-            fieldName: 'file',
-            formData: true,
-            allowMultipleUploads: true
-        });
+            .use(Uppy.Dashboard, {
+                inline: true,
+                target: '#uppy',
+                proudlyDisplayPoweredByUppy: false,
+                showProgressDetails: true,
+                note: notes.join(' | ')
+            })
+            {% if form.use_image_editor %}
+            .use(Uppy.ImageEditor)
+            {% endif %}
+            {% if form.client_resize_enabled %}
+                .use(Uppy.Compressor, {
+                    quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
+                    maxWidth: {{ form.client_resize_max_width ?? 1920 }},
+                    maxHeight: {{ form.client_resize_max_height ?? 1080 }},
+                    preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+                })
+            {% endif %}
+            .use(Uppy.Webcam)
+            .use(Uppy.Audio)
+            .use(Uppy.ScreenCapture)
+            .use(Uppy.XHRUpload, {
+                endpoint: endpoint,
+                fieldName: 'file',
+                formData: true,
+                allowMultipleUploads: true
+            });
 
-        // Notify success
-        uppy.on('complete', () => {
-            UIkit.notification({ message: 'Upload complete', status: 'success' });
-        });
+            // Notify success
+            uppy.on('complete', () => {
+                UIkit.notification({ message: 'Upload complete', status: 'success' });
+            });
 
-        // Notify upload error
-        uppy.on('upload-error', (file, error, response) => {
-            let msg = 'Upload failed';
-            if (response && response.body && response.body.error) msg = response.body.error;
-            else if (error && error.message) msg = error.message;
-            UIkit.notification({ message: msg, status: 'danger' });
-        });
+            // Notify upload error
+            uppy.on('upload-error', (file, error, response) => {
+                let msg = 'Upload failed';
+                if (response && response.body && response.body.error) msg = response.body.error;
+                else if (error && error.message) msg = error.message;
+                UIkit.notification({ message: msg, status: 'danger' });
+            });
 
-        // Notify restriction failures (size/type)
-        uppy.on('restriction-failed', (file, error) => {
-            UIkit.notification({ message: error, status: 'warning' });
+            // Notify restriction failures (size/type)
+            uppy.on('restriction-failed', (file, error) => {
+                UIkit.notification({ message: error, status: 'warning' });
+            });
         });
-    });
-</script>
+    </script>
 
 {% endif %}
