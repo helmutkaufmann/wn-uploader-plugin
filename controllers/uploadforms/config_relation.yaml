@@ -3,7 +3,7 @@ users:
   view:
     list: $/mercator/uploader/models/uploaduser/columns.yaml
     toolbarPartial: $/mercator/uploader/controllers/uploadforms/_relation_toolbar_users.htm
-    toolbarButtons: add|remove
+    toolbarButtons: create|add|delete|link
     showSearch: true
   manage:
     form: $/mercator/uploader/models/uploaduser/fields.yaml

@@ -148,6 +148,11 @@ tabs:
         min: 0
         step: 1
 
+    section_users:
+      label: User Access Control
+      type: section
+      tab: Users
+
     restricted:
       label: Restrict access to specific users
       type: switch
@@ -156,13 +161,17 @@ tabs:
       tab: Users
       comment: Only users from the list with ?user=<token> can open and upload.
 
-    users@update:
+    users:
       label: Users
-      type: relationmanager
+      type: relation
       tab: Users
       span: full
-      trigger:
-        action: hide
-        field: restricted
-        condition: unchecked
+      deferredBinding: true
+      view:
+        list: $/mercator/uploader/models/uploaduser/columns.yaml
+        toolbarButtons: add|create|remove
+        showSearch: true
+      manage:
+        form: $/mercator/uploader/models/uploaduser/fields.yaml
+        list: $/mercator/uploader/models/uploaduser/columns.yaml
         recordsPerPage: 20

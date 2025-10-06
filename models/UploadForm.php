@@ -82,8 +82,6 @@ class UploadForm extends Model
     public $hasMany = [
         "users" => [
             \Mercator\Uploader\Models\UploadUser::class,
-            "key" => "upload_form_id",
-            "otherKey" => "upload_form_id",
             "delete" => true,
         ],
     ];
@@ -129,6 +127,6 @@ class UploadForm extends Model
 
     public function afterFetch()
     {
-        Log::info("UploadForm loaded, has users count: " . $this->users()->count());
+        // Log::info("UploadForm loaded, has users count: " . $this->users()->count());
     }
 }
