@@ -69,7 +69,8 @@ class UploadForms extends Controller
         }
         */
 
-        $users = \Mercator\Uploader\Models\UploadUser::where("id", $checked)
+        $users = \Mercator\Uploader\Models\UploadUser::where("upload_form_id", $form->id)
+            ->whereIn("id", $checked)
             ->get();
 
         if ($users->isEmpty()) {
@@ -77,11 +78,8 @@ class UploadForms extends Controller
             return;
         }
 
-        // $baseUrl = url("/mercator/uploader/myUploader");
-        $baseUrl = url("/ueploder");
+        $baseUrl = url("/mercator/uploader/myUploader");
         $count = 0;
-        
-        $form = \Mercator\Uploader\Models\UploadForm::find($users[0]->form->id);
 
         foreach ($users as $user) {
             if (!$user->email) {

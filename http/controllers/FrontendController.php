@@ -42,26 +42,31 @@ class FrontendController
         ]);
     }
 
-    public function upload($id)
+    public function upload($formToken, $userToken)
     {
-        $form = UploadForm::where('form_id', $id)->first();
+        
+        // Check for form existance
+        $form = UploadForm::where('form_id', $formToken)->first();
         if (!$form) {
-            return response()->json(['error' => 'Invalid form'], 404);
+            return response()->json(['error' => "Invalid upload form $formToken"], 404);
         }
 
-        // If restricted, require a valid ?user=TOKEN belonging to this form and active
+        // If form is restricted, require a valid ?user=TOKEN belonging to this form and active
         if ($form->restricted) {
-            $token = request()->query('user');
+            $token = $userToken;
+        
             $user = $token
                 ? UploadUser::where('token', $token)
                     ->where('upload_form_id', $form->id)
                     ->where('is_active', true)
                     ->first()
                 : null;
-
+            
             if (!$user) {
-                Log::info("Mercator.Uploader: access denied (upload) for form {$form->id} with token " . ($token ?: 'NULL'));
-                return response()->json(['error' => 'Access denied'], 403);
+                Log::info("Mercator.Uploader: Upload access denied for form tolen $formToken with user token " . ($userToken ?: 'NULL'));
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Access denied'], 403);
             }
 
             $user->last_accessed_at = now();

@@ -76,13 +76,13 @@ class Plugin extends PluginBase
         ];
     }
 
-    // One frontend route handling all forms by {id}
+    // Frontend route handling all forms by {id} and {user}
     public function boot()
     {
         Route::group(['middleware' => ['web']], function () {
             Route::get('/mercator/uploader/{id}', [\Mercator\Uploader\Http\Controllers\FrontendController::class, 'show'])
                 ->where('id', '[A-Za-z0-9_-]{10,16}');
-            Route::post('/mercator/uploader/{id}/upload', [\Mercator\Uploader\Http\Controllers\FrontendController::class, 'upload'])
+            Route::post('/mercator/uploader/{formToken}/{userToken}/upload', [\Mercator\Uploader\Http\Controllers\FrontendController::class, 'upload'])
                 ->where('id', '[A-Za-z0-9_-]{10,16}');
         });
     }

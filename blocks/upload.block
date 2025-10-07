@@ -22,6 +22,7 @@ fields:
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploader_form(__fid) : null %}
+{% set user_id = input('user') %}
 
 {% if not form %}
     <div class="uk-container uk-margin">
@@ -66,13 +67,16 @@ fields:
     </div>
 
     <script>
+        // Get the userID from the server-side variable
+        const userId = {{ user_id|json_encode|raw }}; 
+        
         document.addEventListener("DOMContentLoaded", function() {
             // Build endpoint
             const currentPath = window.location.pathname.replace(/\/+$/, '');
             const formId = {{ form.form_id|json_encode|raw }};
             const endpoint = currentPath.match(new RegExp(formId + '$'))
                 ? currentPath + '/upload'
-                : '/mercator/uploader/' + formId + '/upload';
+                : '/mercator/uploader/' + formId + '/' + userId + '/upload';
 
             // Allowed file types (as .ext)
             const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
@@ -126,16 +130,17 @@ fields:
                 formData: true,
                 allowMultipleUploads: true
             });
-
+            
             // Notify success
-            uppy.on('complete', () => {
+            uppy.on('success', () => {
                 UIkit.notification({ message: 'Upload complete', status: 'success' });
             });
 
             // Notify upload error
             uppy.on('upload-error', (file, error, response) => {
                 let msg = 'Upload failed';
-                if (response && response.body && response.body.error) msg = response.body.error;
+                if (response && response.body && response.body.error) 
+                    msg = response.body.error;
                 else if (error && error.message) msg = error.message;
                 UIkit.notification({ message: msg, status: 'danger' });
             });
