@@ -19,11 +19,6 @@ fields:
             below: Below uploader widget
         comment: Defines the position or absence of the title and description (as defined in the backend).
 ==
-use Mercator\Uploader\Models\UploadForm;
-use Mercator\Uploader\Models\UploadUser;
-public function onStart() {
-}
-==
 
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
