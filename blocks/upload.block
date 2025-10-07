@@ -133,15 +133,11 @@ fields:
             .on('upload-success', function (file, response) {
                 UIkit.notification({ message: 'Upload successfully completed.', status: 'success' });
             })
-            .on('error', function (file, error, response)  {
-                Alert (error);
+            .on('upload-error', function (file, error, response)  {
                 UIkit.notification({ message: response.body, status: 'danger' });
             })
             .on('restriction-failed', function (file, error) {
                 UIkit.notification({ message: error, status: 'warning' });
-            })
-            .on('complete', function (se) {
-                Alert("complete");
             });
         });
     </script>
