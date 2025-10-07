@@ -19,15 +19,21 @@ fields:
             below: Below uploader widget
         comment: Defines the position or absence of the title and description (as defind in the backend).
 ==
+use Mercator\Uploader\Models\UploadForm;
+use Mercator\Uploader\Models\UploadUser;
+public function onStart() {
+}
+==
+
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
-{% set form = __fid ? uploader_form(__fid) : null %}
-{% set user_id = input('user') %}
+{% set form = __fid ? uploaderForm(__fid) : null %}
+{% set user = input('user') %}
 
-{% if not form %}
+{% if not uploaderUserIsPermissioned(user,  __fid) %}
     <div class="uk-container uk-margin">
         <div class="uk-alert-danger uk-card uk-card-body">
-            Upload form not found.
+            Upload form not found or user not permissioned.
         </div>
     </div>
 {% else %}
@@ -68,7 +74,7 @@ fields:
 
     <script>
         // Get the userID from the server-side variable
-        const userId = {{ user_id|json_encode|raw }}; 
+        const userId = {{ user|json_encode|raw }}; 
         
         document.addEventListener("DOMContentLoaded", function() {
             // Build endpoint

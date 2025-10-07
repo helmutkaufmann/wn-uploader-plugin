@@ -2,6 +2,8 @@
 
 use System\Classes\PluginBase;
 use Illuminate\Support\Facades\Route;
+use Mercator\Uploader\Models\UploadForm;
+use Mercator\Uploader\Models\UploadUser;
 
 class Plugin extends PluginBase
 {
@@ -17,7 +19,7 @@ class Plugin extends PluginBase
 
     public function register()
     {
-        // Artisan command
+        return;
         $this->registerConsoleCommand('uploader.seed', \Mercator\Uploader\Console\SeedUploaderForm::class);
     }
 
@@ -57,12 +59,33 @@ class Plugin extends PluginBase
         return [
             'functions' => [
                 // Usage in Twig: {% set form = uploader_form('AbCdEf1234') %}
-                'uploader_form' => function ($formId) {
+                'uploaderForm' => function ($formId) {
                     if (!is_string($formId) || $formId === '') {
                         return null;
                     }
                     return \Mercator\Uploader\Models\UploadForm::where('form_id', $formId)->first();
                 },
+                'uploaderUserIsPermissioned' => function ($user, $id="") {
+
+                    // Check if form exsists
+                    $form = UploadForm::where('form_id', $id)->first();
+                    if (!$form) 
+                        return false;
+                    
+                    // Check for form restrictions
+                    $form = UploadForm::where('form_id', $id)
+                                    ->where('restricted', true)
+                                    ->first();
+                    if (!$form) 
+                        return true;
+                    
+                    return (UploadUser::where('token', $user)
+                                    ->where('upload_form_id', $form->id)
+                                    ->where('is_active', true)
+                                    ->first() ? true : false);
+                        
+                }
+                
             ]
         ];
     }

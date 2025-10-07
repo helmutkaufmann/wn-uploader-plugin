@@ -20,7 +20,7 @@ class SeedUploaderForm extends Command
         $form->timezone   = "Europe/Zurich";
         $form->save();
 
-        $this->info("Created UploadForm with ID: {$form->form_id}");
+        $this->info("Created Upload Form with ID: {$form->form_id}");
         $this->info("Open: /mercator/uploader/{$form->form_id}");
     }
 }
