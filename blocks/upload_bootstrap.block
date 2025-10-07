@@ -1,0 +1,175 @@
+name: Uploader - Bootstrap
+author: Helmut Kaufmann
+description: Uploader for backend-defined Upload Form
+tags: ["pages","upload"]
+fields:
+    form_id:
+        label: Form ID (optional)
+        type: text
+        span: left
+        comment: If left blank, the block expects the URL to contain ?id=XXX and will render form XXX.
+    text_position:
+        label: Title and Description Position
+        type: dropdown
+        default: above
+        span: right
+        options:
+            none: Do not render
+            above: Above uploader widget
+            below: Below uploader widget
+        comment: Defines the position or absence of the title and description (as defined in the backend).
+==
+use Mercator\Uploader\Models\UploadForm;
+use Mercator\Uploader\Models\UploadUser;
+public function onStart() {
+}
+==
+
+{# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
+{% set __fid = input('id')|default(form_id) %}
+{% set form = __fid ? uploaderForm(__fid) : null %}
+{% set user = input('user') %}
+
+{% if not uploaderUserIsPermissioned(user, __fid) %}
+  <div class="container my-3">
+    <div class="alert alert-danger mb-0" role="alert">
+      Upload form not found or user not permissioned.
+    </div>
+  </div>
+{% else %}
+
+  {% put scripts %}
+    {# Uppy #}
+    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+
+    <style>
+      /* Make Uppy Dashboard full width */
+      .uppy-Dashboard,
+      .uppy-Dashboard-inner {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+    </style>
+  {% endput %}
+
+  <div class="container my-3">
+    <div id="uploader-alerts"></div>
+
+    <div class="card">
+      <div class="card-body">
+        {# ABOVE #}
+        {% if text_position == 'above' %}
+          <h3 class="h5 mb-2">{{ form.title }}</h3>
+          {% if form.description %}
+            <p class="text-muted mb-3">{{ form.description|raw }}</p>
+          {% endif %}
+        {% endif %}
+
+        <div id="uppy" class="my-2"></div>
+
+        {# BELOW #}
+        {% if text_position == 'below' %}
+          <h3 class="h5 mt-3 mb-2">{{ form.title }}</h3>
+          {% if form.description %}
+            <p class="text-muted mb-0">{{ form.description|raw }}</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Bootstrap alert helper
+    function showBsAlert(type, message) {
+      const wrap = document.getElementById('uploader-alerts');
+      if (!wrap) return;
+      const el = document.createElement('div');
+      el.className = `alert alert-${type} alert-dismissible fade show`;
+      el.setAttribute('role', 'alert');
+      el.innerHTML = `
+        <div>${message}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      wrap.appendChild(el);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Build endpoint
+      const currentPath = window.location.pathname.replace(/\/+$/, '');
+      const formId = {{ form.form_id|json_encode|raw }};
+      const userId = {{ user|json_encode|raw }};
+      const endpoint = currentPath.match(new RegExp(formId + '$'))
+        ? currentPath + '/upload'
+        : '/mercator/uploader/endpoint/' + formId + '/' + userId;
+
+      // Allowed file types -> JS builds list like ['.jpg','.png']
+      const allowedTypesCsv = {{ (form.allowed_types ?? '')|json_encode|raw }};
+      const allowedTypes = allowedTypesCsv
+        ? allowedTypesCsv.split(',').map(s => s.trim().toLowerCase()).filter(Boolean).map(ext => ext.startsWith('.') ? ext : '.' + ext)
+        : null;
+
+      // Limits (MB -> bytes) or null
+      const maxFileSize = {{ form.max_file_size and form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }};
+      const maxTotalFileSize = {{ form.max_total_file_size and form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }};
+
+      const notes = [];
+      if (allowedTypes && allowedTypes.length) notes.push('Allowed: ' + allowedTypes.join(' '));
+      {% if form.max_file_size %}
+      notes.push('Max per file: {{ form.max_file_size }} MB');
+      {% endif %}
+      {% if form.max_total_file_size %}
+      notes.push('Total: {{ form.max_total_file_size }} MB');
+      {% endif %}
+
+      const uppy = new Uppy.Uppy({
+        autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
+        allowMultipleUploadBatches: true,
+        restrictions: {
+          maxNumberOfFiles: null,
+          allowedFileTypes: allowedTypes && allowedTypes.length ? allowedTypes : null,
+          maxFileSize: maxFileSize === 'null' ? null : maxFileSize,
+          maxTotalFileSize: maxTotalFileSize === 'null' ? null : maxTotalFileSize
+        }
+      })
+      .use(Uppy.Dashboard, {
+        inline: true,
+        target: '#uppy',
+        proudlyDisplayPoweredByUppy: false,
+        showProgressDetails: true,
+        note: notes.join(' | ')
+      })
+      {% if form.use_image_editor %}
+      .use(Uppy.ImageEditor)
+      {% endif %}
+      {% if form.client_resize_enabled %}
+      .use(Uppy.Compressor, {
+        quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
+        maxWidth: {{ form.client_resize_max_width ?? 1920 }},
+        maxHeight: {{ form.client_resize_max_height ?? 1080 }},
+        preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+      })
+      {% endif %}
+      .use(Uppy.Webcam)
+      .use(Uppy.Audio)
+      .use(Uppy.ScreenCapture)
+      .use(Uppy.XHRUpload, {
+        endpoint: endpoint,
+        fieldName: 'file',
+        formData: true,
+        allowMultipleUploads: true
+      })
+      .on('upload-success', function () {
+        showBsAlert('success', 'Upload successfully completed.');
+      })
+      .on('upload-error', function (_file, _error, response) {
+        const msg = response && response.body ? response.body : 'Upload failed.';
+        showBsAlert('danger', msg);
+      })
+      .on('restriction-failed', function (_file, error) {
+        showBsAlert('warning', error);
+      });
+    });
+  </script>
+
+{% endif %}

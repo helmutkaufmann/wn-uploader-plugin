@@ -118,7 +118,9 @@ class Plugin extends PluginBase
     {
         return [
             'mercator_uploader_qrcode' => base_path('plugins/mercator/uploader/blocks/qrcode.block'),
+            'mercator_uploader_qrcode_bootstrap' => base_path('plugins/mercator/uploader/blocks/qrcode_bootstrap.block'),
             'mercator_uploader_uploader' => base_path('plugins/mercator/uploader/blocks/upload.block'),
+            'mercator_uploader_uploader_bootstrap' => base_path('plugins/mercator/uploader/blocks/upload_bootstrap.block'),
         ];
     }
 
