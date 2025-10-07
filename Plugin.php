@@ -82,7 +82,7 @@ class Plugin extends PluginBase
         Route::group(['middleware' => ['web']], function () {
             Route::get('/mercator/uploader/{id}', [\Mercator\Uploader\Http\Controllers\FrontendController::class, 'show'])
                 ->where('id', '[A-Za-z0-9_-]{10,16}');
-            Route::post('/mercator/uploader/{formToken}/{userToken}/upload', [\Mercator\Uploader\Http\Controllers\FrontendController::class, 'upload'])
+            Route::post('/mercator/uploader/endpoint/{formToken}/{userToken}', [\Mercator\Uploader\Http\Controllers\FrontendController::class, 'upload'])
                 ->where('id', '[A-Za-z0-9_-]{10,16}');
         });
     }

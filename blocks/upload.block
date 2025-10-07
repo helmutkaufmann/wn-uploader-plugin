@@ -76,7 +76,7 @@ fields:
             const formId = {{ form.form_id|json_encode|raw }};
             const endpoint = currentPath.match(new RegExp(formId + '$'))
                 ? currentPath + '/upload'
-                : '/mercator/uploader/' + formId + '/' + userId + '/upload';
+                : '/mercator/uploader/endpoint/' + formId + '/' + userId;
 
             // Allowed file types (as .ext)
             const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
@@ -129,25 +129,19 @@ fields:
                 fieldName: 'file',
                 formData: true,
                 allowMultipleUploads: true
-            });
-            
-            // Notify success
-            uppy.on('success', () => {
-                UIkit.notification({ message: 'Upload complete', status: 'success' });
-            });
-
-            // Notify upload error
-            uppy.on('upload-error', (file, error, response) => {
-                let msg = 'Upload failed';
-                if (response && response.body && response.body.error) 
-                    msg = response.body.error;
-                else if (error && error.message) msg = error.message;
-                UIkit.notification({ message: msg, status: 'danger' });
-            });
-
-            // Notify restriction failures (size/type)
-            uppy.on('restriction-failed', (file, error) => {
+            })
+            .on('upload-success', function (file, response) {
+                UIkit.notification({ message: 'Upload successfully completed.', status: 'success' });
+            })
+            .on('error', function (file, error, response)  {
+                Alert (error);
+                UIkit.notification({ message: response.body, status: 'danger' });
+            })
+            .on('restriction-failed', function (file, error) {
                 UIkit.notification({ message: error, status: 'warning' });
+            })
+            .on('complete', function (se) {
+                Alert("complete");
             });
         });
     </script>

@@ -65,8 +65,8 @@ class FrontendController
             if (!$user) {
                 Log::info("Mercator.Uploader: Upload access denied for form tolen $formToken with user token " . ($userToken ?: 'NULL'));
                 return response()->json([
-                    'success' => false,
-                    'error' => 'Access denied'], 403);
+                    'status' => 403,
+                    'body' => 'Access denied'], 403);
             }
 
             $user->last_accessed_at = now();
