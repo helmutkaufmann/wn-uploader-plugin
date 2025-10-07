@@ -65,7 +65,7 @@ class Plugin extends PluginBase
                     }
                     return \Mercator\Uploader\Models\UploadForm::where('form_id', $formId)->first();
                 },
-                'uploaderUserIsPermissioned' => function ($user, $id="") {
+                'uploaderUserIsPermissioned' => function ($id, $user="") {
 
                     // Check if form exsists
                     $form = UploadForm::where('form_id', $id)->first();
