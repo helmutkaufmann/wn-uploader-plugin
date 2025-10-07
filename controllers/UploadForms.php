@@ -52,9 +52,12 @@ class UploadForms extends Controller
 
     public function onSendInvites()
     {
+        Log::info("onSendInvites: started");
         // parent ID of the relation (current form)
         $formId = post("manage_id"); // RelationController posts this
+        Log::info("onSendInvites to " . input("id"));
         $form = \Mercator\Uploader\Models\UploadForm::find($formId);
+        
         if (!$form) {
             \Flash::error("Upload Form not found.");
             return;

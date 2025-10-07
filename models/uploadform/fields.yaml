@@ -17,7 +17,7 @@ fields:
   description:
     label: Description
     type: textarea
-    size: large
+    size: medium
 
   upload_dir:
     label: Upload Directory
@@ -25,11 +25,12 @@ fields:
     mode: folder
     span: left
 
-  allowed_types:
-    label: Allowed File Types
-    type: text
+  timezone:
+    label: Timezone
+    type: dropdown
+    options: getTimezoneOptions
     span: right
-    default: jpg,png,jpeg,gif,bmp,tif,tiff,webp
+    default: Europe/Zurich
 
   start_date:
     label: Start Date and Time
@@ -49,19 +50,12 @@ fields:
     default: 2099-12-31 23:59:59
     comment: Date and time the upload interface becomes unavailable.
 
-  timezone:
-    label: Timezone
-    type: dropdown
-    options: getTimezoneOptions
-    span: left
-    default: Europe/Zurich
-
   auto_upload_enabled:
     label: Auto-upload files immediately
     type: switch
-    span: right
+    span: left
     default: true
-    comment: "If enabled, files are uploaded as they are dropped by the user."
+    comment: "If enabled, files are uploaded as they are dropped by the user. Note that the editor is not availaable with this option being active."
 
 tabs:
   fields:
@@ -72,17 +66,31 @@ tabs:
       span: left
       default: true
 
+    preserve_exif:
+      label: Preserve EXIF Metadata
+      type: switch
+      tab: Pre-Processing
+      span: right
+      default: false
+
     client_resize_enabled:
-      label: Enable client-side resize/compress
+      label: Enable client-side resizing and compression
       type: switch
       tab: Pre-Processing
       span: left
       default: false
 
+    allowed_types: 
+      label: Allowed File Types
+      type: text
+      span: left
+      tab: Pre-Processing
+      default: jpg,png,jpeg,gif,bmp,tif,tiff,webp
+
     client_resize_max_width:
       label: Max width (px)
       type: number
-      tab: Pre-Processing
+      tab: Resizing & Compression
       span: left
       default: 1920
       trigger:
@@ -93,7 +101,7 @@ tabs:
     client_resize_max_height:
       label: Max height (px)
       type: number
-      tab: Pre-Processing
+      tab: Resizing & Compression
       span: right
       default: 1080
       trigger:
@@ -104,7 +112,7 @@ tabs:
     client_resize_quality:
       label: JPEG/WebP Quality (0.0–1.0)
       type: number
-      tab: Pre-Processing
+      tab: Resizing & Compression
       span: left
       default: 0.8
       attributes:
@@ -115,12 +123,14 @@ tabs:
         action: show
         field: client_resize_enabled
         condition: checked
-
-    preserve_exif:
-      label: Preservation of EXIF Metadata
+      
+    restricted:
+      label: Restrict access to specific users
       type: switch
-      tab: Restrictions
+      span: left
       default: false
+      tab: Restrictions
+      comment: Only users from the list with ?user=<token> can open and upload.
 
     section_filesize:
       label: Upload Size Restrictions
@@ -147,14 +157,6 @@ tabs:
       attributes:
         min: 0
         step: 1
-
-    restricted:
-      label: Restrict access to specific users
-      type: switch
-      span: left
-      default: false
-      tab: Users
-      comment: Only users from the list with ?user=<token> can open and upload.
 
     users@update:
       label: Users

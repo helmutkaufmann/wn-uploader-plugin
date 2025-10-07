@@ -4,7 +4,7 @@
 
 columns:
     form_id:
-        label: Form ID
+        label: Upload Form
         searchable: true
     title:
         label: Title
@@ -21,6 +21,5 @@ columns:
         label: End
         type: datetime
         format: Y-m-d H:i
-    timezone:
-        label: Timezone
+
 

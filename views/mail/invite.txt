@@ -4,3 +4,4 @@ You have been invited to upload files to "{{ form.title }}".
 
 Open the uploader:
 {{ url }}
+
