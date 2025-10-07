@@ -26,7 +26,7 @@ fields:
 ==
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
-{% set form = __fid ? uploader_form(__fid) : null %}
+{% set form = __fid ? uploaderForm(__fid) : null %}
 
 {% if not form %}
     <div class="uk-container uk-margin">
@@ -35,27 +35,30 @@ fields:
         </div>
     </div>
 {% else %}
+
+    {% set QRCode=uploaderQRCode(url("/" ~ url ~ "?id="~ form_id), 400, 4) %}
     
-    <div class="uk-card uk-card-default uk-card-body uk-margin">
-        {# ABOVE #}
-        {% if text_position == 'above' %}
-            <h3 class="uk-margin-small">{{ form.title }}</h3>
-            {% if form.description %}
-                <p class="uk-text-meta">{{ form.description|raw }}</p>
-            {% endif %}
-        {% endif %}
-        <div class="uk-align-center">
-            <a href="{{url('/' ~ url ~ '?id='~ form_id)}}">
-                {{ qrcodeIMG(url("/" ~ url ~ "?id="~ form_id), 12, "XXXXXX", "000000") }}
-            </a>
-        </div>
-        {# BELOW #}
-        {% if text_position == 'below' %}
-            <h3 class="uk-margin-small">{{ form.title }}</h3>
-            {% if form.description %}
-                <p class="uk-text-meta">{{ form.description|raw }}</p>
-            {% endif %}
-        {% endif %}
     </div>
+        <div class="uk-card uk-card-default uk-card-body uk-margin">
+            {# ABOVE #}
+            {% if text_position == 'above' %}
+                <h3 class="uk-margin-small">{{ form.title }}</h3>
+                {% if form.description %}
+                    <p class="uk-text-meta">{{ form.description|raw }}</p>
+                {% endif %}
+            {% endif %}
+            <div class="uk-align-center">
+                <a href="{{url('/' ~ url ~ '?id='~ form_id)}}">
+                    <img src="{{QRCode}}"  width='300' height='300' />
+                </a>
+            </div>
+            {# BELOW #}
+            {% if text_position == 'below' %}
+                <h3 class="uk-margin-small">{{ form.title }}</h3>
+                {% if form.description %}
+                    <p class="uk-text-meta">{{ form.description|raw }}</p>
+                {% endif %}
+            {% endif %}
+        </div>
 
 {% endif %}

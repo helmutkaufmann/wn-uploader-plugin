@@ -5,6 +5,16 @@ use Illuminate\Support\Facades\Route;
 use Mercator\Uploader\Models\UploadForm;
 use Mercator\Uploader\Models\UploadUser;
 
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Label\Label;
+use Endroid\QrCode\Logo\Logo;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
+
+require_once("vendor/autoload.php");
 class Plugin extends PluginBase
 {
     public function pluginDetails()
@@ -83,6 +93,21 @@ class Plugin extends PluginBase
                                     ->where('upload_form_id', $form->id)
                                     ->where('is_active', true)
                                     ->first() ? true : false); 
+                },
+                'uploaderQRCode' => function ($data, $size = 200, $margin = 4) {
+                    $writer = new PngWriter();
+                    $qrCode = new QrCode(
+                        data: $data,
+                        encoding: new Encoding('UTF-8'),
+                        errorCorrectionLevel: ErrorCorrectionLevel::Low,
+                        size: $size,
+                        margin: $margin,
+                        roundBlockSizeMode: RoundBlockSizeMode::Margin,
+                        foregroundColor: new Color(0, 0, 0),
+                        backgroundColor: new Color(255, 255, 255)
+                    );
+                    $result = $writer->write($qrCode);
+                    return $result->getDataUri();
                 }
             ]
         ];
