@@ -70,22 +70,20 @@ class Plugin extends PluginBase
                     // Check if form exsists
                     $form = UploadForm::where('form_id', $id)->first();
                     if (!$form) 
-                        return false;
+                        return false; // form does not exist
                     
                     // Check for form restrictions
                     $form = UploadForm::where('form_id', $id)
                                     ->where('restricted', true)
                                     ->first();
                     if (!$form) 
-                        return true;
+                        return true; // form has no restrictions
                     
                     return (UploadUser::where('token', $user)
                                     ->where('upload_form_id', $form->id)
                                     ->where('is_active', true)
-                                    ->first() ? true : false);
-                        
+                                    ->first() ? true : false); 
                 }
-                
             ]
         ];
     }
