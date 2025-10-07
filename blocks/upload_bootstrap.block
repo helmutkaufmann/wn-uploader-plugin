@@ -30,7 +30,7 @@ public function onStart() {
 {% set form = __fid ? uploaderForm(__fid) : null %}
 {% set user = input('user') %}
 
-{% if not uploaderUserIsPermissioned(user, __fid) %}
+{% if not uploaderUserIsPermissioned(__fid, user) %}
   <div class="container my-3">
     <div class="alert alert-danger mb-0" role="alert">
       Upload form not found or user not permissioned.
