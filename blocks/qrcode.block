@@ -12,7 +12,8 @@ fields:
         label: Upload Page URL
         type: text
         span: right
-        comment: The URL must be relative to the root of the installation, with neeither leadning nor trailing slash ("/").
+        comment: The URL must be relative to the root of the installation, with no trailing slash ("/"). /mercator/uploader/default uses the default page.
+        default: /mercator/uploader/default
     text_position:
         label: Title / Description position
         type: dropdown

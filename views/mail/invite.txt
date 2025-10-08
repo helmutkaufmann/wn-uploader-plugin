@@ -2,6 +2,7 @@ Hello {{ name }},
 
 You have been invited to upload files to "{{ form.title }}".
 
-Open the uploader:
-{{ url }}
+Open the uploader: {{ url }}
+
+Thanks for uploading and have a great day!
 

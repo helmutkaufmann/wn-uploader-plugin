@@ -7,19 +7,20 @@ use Illuminate\Support\Facades\File;
 use Mercator\Uploader\Models\UploadForm;
 use Mercator\Uploader\Models\UploadUser;
 use Log;
+use Redirect;
 
 class FrontendController
 {
-    public function show($id)
+    public function show($id, $userToken=null)
     {
         $form = UploadForm::where('form_id', $id)->first();
         if (!$form) {
-            return response("Upload form not found.", 404);
+            return Redirect::to('/404')->with('message', 'Upload form not found.');
         }
-
+        
         // If restricted, require a valid ?user=TOKEN belonging to this form and active
         if ($form->restricted) {
-            $token = request()->query('user');
+            $token = $userToken;
             $user = $token
                 ? UploadUser::where('token', $token)
                     ->where('upload_form_id', $form->id)
@@ -28,8 +29,8 @@ class FrontendController
                 : null;
 
             if (!$user) {
-                Log::info("Mercator.Uploader: access denied (show) for form {$form->id} with token " . ($token ?: 'NULL'));
-                return response("Access denied.", 403);
+                // Log::info("Mercator.Uploader: access denied (show) for form {$form->id} with token " . ($token ?: 'NULL'));
+                return Redirect::to('/403')->with('message', 'Access denied');
             }
 
             $user->last_accessed_at = now();
@@ -37,8 +38,9 @@ class FrontendController
         }
 
         return view('mercator.uploader::upload', [
-            'form' => $form,
             'csrf' => csrf_token(),
+            'id' => $id,
+            'user' => $userToken
         ]);
     }
     
@@ -53,7 +55,7 @@ class FrontendController
 
     public function upload($formToken, $userToken)
     {
-        
+
         // Check for form existance
         $form = UploadForm::where('form_id', $formToken)->first();
         if (!$form) {

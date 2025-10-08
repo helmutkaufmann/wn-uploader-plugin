@@ -58,17 +58,6 @@ class UploadForms extends Controller
             return;
         }
         
-        // parent ID of the relation (current form)
-        /*
-        $formId = post("manage_id"); // RelationController posts this
-        $form = \Mercator\Uploader\Models\UploadForm::find($formId);
-        
-        if (!$form) {
-            \Flash::error("Upload Form not found.");
-            return;
-        }
-        */
-
         $users = \Mercator\Uploader\Models\UploadUser::where("id", $checked)
             ->get();
 
@@ -77,8 +66,8 @@ class UploadForms extends Controller
             return;
         }
 
-        // $baseUrl = url("/mercator/uploader/myUploader");
-        $baseUrl = url("/ueploder");
+        // $baseUrl = url("/mercator/uploader/default");
+        $baseUrl = url("/mercator/uploader/default");
         $count = 0;
         
         $form = \Mercator\Uploader\Models\UploadForm::find($users[0]->form->id);
@@ -87,7 +76,7 @@ class UploadForms extends Controller
             if (!$user->email) {
                 continue;
             }
-            $inviteUrl = $baseUrl . "?id=" . $form->form_id . "&user=" . $user->token;
+            $inviteUrl = $baseUrl . "/" . $form->form_id . "/" . $user->token;
 
             Mail::send(
                 "mercator.uploader::mail.invite",

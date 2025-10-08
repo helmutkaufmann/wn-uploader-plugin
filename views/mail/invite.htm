@@ -1,9 +1,9 @@
-<h3>Hello {{ name }},</h3>
+<h2>Hello <strong>{{ name }}</strong>,</h2>
 
 <p>You have been invited to upload files to <strong>{{ form.title }}</strong>.</p>
 
 {% if form.description %}
-<p>{{ form.description|raw }}</p>
+    <p>{{ form.description|raw }}</p>
 {% endif %}
 
 <p>
@@ -11,4 +11,4 @@
   <a href="{{ url }}">{{ url }}</a>
 </p>
 
-<p>Thank you.</p>
+<p>Thanks for uploading and have a great day!</p>
