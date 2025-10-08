@@ -41,6 +41,15 @@ class FrontendController
             'csrf' => csrf_token(),
         ]);
     }
+    
+    protected function camelCase($string) {
+        $string = str_replace(' ', '', 
+            ucwords(str_replace(['-', '_'], 
+            ' ', $string))
+        );
+
+        return $string;
+    }   
 
     public function upload($formToken, $userToken)
     {
@@ -71,7 +80,10 @@ class FrontendController
 
             $user->last_accessed_at = now();
             $user->save();
+            $userName = "__" . self::camelCase($user->name) . "__";
         }
+        else  
+            $userName = "";
 
         // --- Check upload window ---
         $tz = new \DateTimeZone($form->timezone ?: 'UTC');
@@ -154,7 +166,7 @@ class FrontendController
         foreach ($files as $file) {
             $safeName  = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
             $ext       = strtolower($file->getClientOriginalExtension());
-            $finalName = uniqid() . '_' . $safeName . '.' . $ext;
+            $finalName = uniqid() . '_' . $userName . $safeName . '.' . $ext;
             $storedPath = $file->storeAs($path, $finalName, 'local');
             $stored[] = $storedPath;
         }
