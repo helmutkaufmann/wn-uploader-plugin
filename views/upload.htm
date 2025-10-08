@@ -34,9 +34,9 @@
 
             {% set form = uploaderForm(id) %}
             <div class="uk-card uk-card-default uk-card-body uk-margin">
-                <h3 class="uk-margin-small">{{ form.title }}</h3>
+                <div class="uk-card-title">{{ form.title }}</div>
                 {% if form.description %}
-                <p class="uk-text-meta">{{ form.description|raw }}</p>
+                <p>{{ form.description|raw }}</p>
                 {% endif %}
 
                 <div id="uppy" class="uk-margin"></div>
