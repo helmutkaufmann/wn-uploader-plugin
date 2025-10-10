@@ -23,7 +23,7 @@ class Plugin extends PluginBase
         return [
             "name" => "Uploader",
             "description" => "Managed file uploads via DB-defined forms + route-based frontend (UIKit + Uppy).",
-            "author" => "Mercator",
+            "author" => "Helmut Kaufmann, Kuessnacht am Rigi, Switzerland",
             "icon" => "icon-upload",
         ];
     }
