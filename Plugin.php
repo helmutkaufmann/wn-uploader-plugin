@@ -13,6 +13,7 @@ use Endroid\QrCode\Label\Label;
 use Endroid\QrCode\Logo\Logo;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
+use Log;
 
 require_once("vendor/autoload.php");
 class Plugin extends PluginBase
@@ -94,7 +95,7 @@ class Plugin extends PluginBase
                                     ->where('is_active', true)
                                     ->first() ? true : false); 
                 },
-                'uploaderQRCode' => function ($data, $size = 200, $margin = 4) {
+                'uploaderQRCode' => function ($data, $size = 300, $margin = 6) {
                     $writer = new PngWriter();
                     $qrCode = new QrCode(
                         data: $data,
@@ -116,11 +117,12 @@ class Plugin extends PluginBase
     // Register WinterCMS .blocks
     public function registerBlocks()
     {
+	Log::info("QRCode registered");
         return [
-            'mercator_uploader_qrcode' => base_path('plugins/mercator/uploader/blocks/qrcode.block'),
-            'mercator_uploader_qrcode_bootstrap' => base_path('plugins/mercator/uploader/blocks/qrcode_bootstrap.block'),
-            'mercator_uploader_uploader' => base_path('plugins/mercator/uploader/blocks/upload.block'),
-            'mercator_uploader_uploader_bootstrap' => base_path('plugins/mercator/uploader/blocks/upload_bootstrap.block'),
+            'mercator_uploader_qrcode' => '$/mercator/uploader/blocks/qrcode.block',
+            // 'mercator_uploader_qrcode_bootstrap' => '$/mercator/uploader/blocks/qrcode_bootstrap.block',
+            'mercator_uploader_uploader' => '$/mercator/uploader/blocks/upload.block',
+            // 'mercator_uploader_uploader_bootstrap' => '$/mercator/uploader/blocks/upload_bootstrap.block',
         ];
     }
 
