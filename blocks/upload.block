@@ -32,22 +32,18 @@ fields:
     </div>
 {% else %}
 
-    {% put scripts %}
-        {# Uppy script #}
-        <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
-        
-        {# Include styles here as {% styles %} will be rendered before the block is rendered  #}
-        <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
-        <style>
-            /* Make Uppy Dashboard full width */
-            .uppy-Dashboard,
-            .uppy-Dashboard-inner {
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-        </style>
-    {% endput %}
-
+    {# Uppy script and style #}
+    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+    <style>
+        /* Make Uppy Dashboard full width */
+        .uppy-Dashboard,
+        .uppy-Dashboard-inner {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    </style>
+    
     <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
         {% if text_position == 'above' %}
@@ -110,7 +106,7 @@ fields:
                 showProgressDetails: true,
                 note: notes.join(' | ')
             })
-            {% if form.use_image_editor %}
+            {% if form.use_image_editor and not form.auto_upload_enabled %}
             .use(Uppy.ImageEditor)
             {% endif %}
             {% if form.client_resize_enabled %}

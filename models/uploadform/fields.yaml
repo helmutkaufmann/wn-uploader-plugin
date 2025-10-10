@@ -65,6 +65,10 @@ tabs:
       tab: Pre-Processing
       span: left
       default: true
+      trigger:
+          action: disable
+          field: auto_upload_enabled
+          condition: checked
 
     preserve_exif:
       label: Preserve EXIF Metadata
