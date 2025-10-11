@@ -58,8 +58,8 @@ In your CMS page or layout:
 
 ```ini
 [Uploader]
-formId = "project2025"
-userId = "john.doe"
+formId = "ajnjcdshu73nsd"
+userId = "mdswedjndso734jdsi832j"
 ```
 
 Then in the page markup:
