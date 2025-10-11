@@ -75,13 +75,18 @@ class Plugin extends PluginBase
     {
         return [
             "functions" => [
+                // Obtain a handle to the backend upload form with identifer AbCdEf1234.
                 // Usage in Twig: {% set form = uploader_form('AbCdEf1234') %}
+		// Then use, e.g., title and description, such as form.title or form.description
                 "uploaderForm" => function ($formId) {
                     if (!is_string($formId) || $formId === "") {
                         return null;
                     }
                     return \Mercator\Uploader\Models\UploadForm::where("form_id", $formId)->first();
                 },
+		// Check if an upload form has access restrictions on it 
+		// Or, when passing a uiser ID, check if that user has access to an upload form.
+		// Usage in Twig: {% if uploaderUserIsPermissioned("FORMID") %} or {% if uploaderUserIsPermissioned(i, "FORMID", "USERID") %}
                 "uploaderUserIsPermissioned" => function ($id, $user = "") {
                     /// Check if form exsists, loads it's users
                     $form = UploadForm::where("form_id", $id)->with("users")->first();
@@ -97,6 +102,8 @@ class Plugin extends PluginBase
                         return $form->users->where("is_active", true)->whereStrict("token", $user)->first() ? true : false;
                     }
                 },
+		// Create a QR Code (as an inline image data URI from astring ($data)
+		// See blocks/qrcode.block for an example
                 "uploaderQRCode" => function ($data, $size = 300, $margin = 6) {
                     $writer = new PngWriter();
                     $qrCode = new QrCode(
