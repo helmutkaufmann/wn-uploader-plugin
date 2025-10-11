@@ -26,7 +26,7 @@ class Plugin extends PluginBase
         return [
             "name" => "Uploader",
             "description" =>
-                "Managed file uploads via databse-defined forms and route-based frontend (UIKit + Uppy). Includes a CMS component without styling.",
+                "Managed file uploads via databse-defined forms and route-based frontend (UIKit + Uppy). Includes a CMS component without styling. Note: When using .blocks, you can omly have ONE uploader per page for the time being.",
             "author" => "Helmut Kaufmann, Kuessnacht am Rigi, Switzerland",
             "icon" => "icon-upload",
         ];
