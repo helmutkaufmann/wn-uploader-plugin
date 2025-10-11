@@ -1,5 +1,7 @@
-{# Partial to be called with userID and optionally formID  #}
-{# Get the Upload Form from the formID#} {% set form = uploaderForm(formID) %} {# Uppy script and style #}
+{# Partial to be called with formID and optionally userID  #}
+{# Get the Upload Form from the formID#} 
+{% set form = uploaderForm(formID) %} 
+{# Uppy script and style #}
 <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
 <style>
