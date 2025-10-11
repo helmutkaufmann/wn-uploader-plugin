@@ -80,10 +80,7 @@ class UploadForm extends Model
     ];
 
     public $hasMany = [
-        "users" => [
-            \Mercator\Uploader\Models\UploadUser::class,
-            "delete" => true,
-        ],
+        "users" => [\Mercator\Uploader\Models\UploadUser::class, "delete" => true],
     ];
     public function beforeCreate()
     {

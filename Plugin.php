@@ -13,22 +13,20 @@ use Endroid\QrCode\Label\Label;
 use Endroid\QrCode\Logo\Logo;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
-use Log;
 
 class Plugin extends PluginBase
 {
     /**
      * @var array Plugin dependencies
      */
-    public $require = [
-        'Winter.Blocks',
-    ];
+    public $require = ["Winter.Blocks"];
 
     public function pluginDetails()
     {
         return [
             "name" => "Uploader",
-            "description" => "Managed file uploads via databse-defined forms and route-based frontend (UIKit + Uppy). Includes a CMS component without styling.",
+            "description" =>
+                "Managed file uploads via databse-defined forms and route-based frontend (UIKit + Uppy). Includes a CMS component without styling.",
             "author" => "Helmut Kaufmann, Kuessnacht am Rigi, Switzerland",
             "icon" => "icon-upload",
         ];
@@ -71,14 +69,14 @@ class Plugin extends PluginBase
             "functions" => [
                 // Obtain a handle to the backend upload form with identifer AbCdEf1234.
                 // Usage in Twig: {% set form = uploader_form('AbCdEf1234') %}
-		        // Then use, e.g., title and description, such as form.title or form.description
+                // Then use, e.g., title and description, such as form.title or form.description
                 "uploaderForm" => function ($formId) {
                     if (!is_string($formId) || $formId === "") {
                         return null;
                     }
                     return \Mercator\Uploader\Models\UploadForm::where("form_id", $formId)->first();
                 },
-                // Check if an upload form has access restrictions on it 
+                // Check if an upload form has access restrictions on it
                 // Or, when passing a uiser ID, check if that user has access to an upload form.
                 // Usage in Twig: {% if uploaderUserIsPermissioned("FORMID") %} or {% if uploaderUserIsPermissioned(i, "FORMID", "USERID") %}
                 "uploaderUserIsPermissioned" => function ($id, $user = "") {
@@ -93,7 +91,9 @@ class Plugin extends PluginBase
                         return true;
                     } else {
                         // Search the form users collection for one matching the given credentials
-                        return $form->users->where("is_active", true)->whereStrict("token", $user)->first() ? true : false;
+                        return $form->users->where("is_active", true)->whereStrict("token", $user)->first()
+                            ? true
+                            : false;
                     }
                 },
                 // Create a QR Code (as an inline image data URI from astring ($data)
@@ -120,12 +120,11 @@ class Plugin extends PluginBase
     // Register WinterCMS .blocks
     public function registerBlocks()
     {
-        Log::info("QRCode registered");
         return [
             "mercator_uploader_qrcode" => '$/mercator/uploader/blocks/qrcode.block',
-            'mercator_uploader_qrcode_bootstrap' => '$/mercator/uploader/blocks/qrcode_bootstrap.block',
+            "mercator_uploader_qrcode_bootstrap" => '$/mercator/uploader/blocks/qrcode_bootstrap.block',
             "mercator_uploader_uploader" => '$/mercator/uploader/blocks/upload.block',
-            'mercator_uploader_uploader_bootstrap' => '$/mercator/uploader/blocks/upload_bootstrap.block',
+            "mercator_uploader_uploader_bootstrap" => '$/mercator/uploader/blocks/upload_bootstrap.block',
         ];
     }
 
@@ -147,8 +146,7 @@ class Plugin extends PluginBase
     public function registerComponents()
     {
         return [
-            \Mercator\Uploader\Components\Uploader::class => 'uploader'
+            \Mercator\Uploader\Components\Uploader::class => "uploader",
         ];
     }
-
 }
