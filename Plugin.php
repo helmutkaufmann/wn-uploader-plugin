@@ -17,6 +17,13 @@ use Log;
 
 class Plugin extends PluginBase
 {
+    /**
+     * @var array Plugin dependencies
+     */
+    public $require = [
+        'Winter.Blocks',
+    ];
+
     public function pluginDetails()
     {
         return [
