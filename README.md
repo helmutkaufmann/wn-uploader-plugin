@@ -136,9 +136,7 @@ If the form does not exist or access is restricted and the user in not on the al
 ### 3. Email Notifications
 
 Each upload form can optionally send email notifications when files are uploaded:
-
-Notifications are sent to the **authorized user** defined in the form. The email will provide a link where the user 
-will be able to upload his or her files.
+Notifications are sent to the **authorized user** defined in the form. The email will provide a link where the user will be able to upload his or her files.
 ---
 
 ## 🔐 Access Summary
