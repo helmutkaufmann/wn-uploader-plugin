@@ -1,4 +1,4 @@
-<?php namespace Mercator\Uploader\Http\Controllers;
+<?php namespace Mercator\Uploader\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -9,7 +9,7 @@ use Mercator\Uploader\Models\UploadUser;
 use Log;
 use Redirect;
 
-class FrontendController
+class FrontendRoutes
 {
     public function show($id, $userToken=null)
     {

@@ -34,12 +34,6 @@ class Plugin extends PluginBase
         ];
     }
 
-    public function register()
-    {
-        return;
-        $this->registerConsoleCommand("uploader.seed", \Mercator\Uploader\Console\SeedUploaderForm::class);
-    }
-
     public function registerPermissions()
     {
         return [
@@ -140,11 +134,11 @@ class Plugin extends PluginBase
     {
         Route::group(["middleware" => ["web"]], function () {
             Route::get("/mercator/uploader/default/{id}/{userToken?}", [
-                \Mercator\Uploader\Http\Controllers\FrontendController::class,
+                \Mercator\Uploader\Controllers\FrontendRoutes::class,
                 "show",
             ])->where("id", "[A-Za-z0-9_-]{10,16}");
             Route::post("/mercator/uploader/endpoint/{formToken}/{userToken}", [
-                \Mercator\Uploader\Http\Controllers\FrontendController::class,
+                \Mercator\Uploader\Controllers\FrontendRoutes::class,
                 "upload",
             ])->where("id", "[A-Za-z0-9_-]{10,16}");
         });
