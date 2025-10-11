@@ -86,6 +86,7 @@ Then in the page markup:
 <div class="upload-section">
     {% component 'uploader' %}
 </div>
+```
 
 If a form is missing or access is denied, the component displays:
 
@@ -111,9 +112,9 @@ Each block references the backend **Form ID** and automatically enforces form pe
 
 ### 1. Upload Forms
 
-Go to **Uploader → Forms** in the backend.
+Go to **Uploader** in the backend.
 
-Each **Upload Form** defines:
+Each **Upload Form** contained there defines:
 
 * A unique **Form ID**
 * **Title** and **Description** shown in frontend blocks and components
