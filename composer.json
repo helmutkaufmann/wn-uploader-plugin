@@ -1,26 +1,5 @@
-{    
-    "name": "helmutkaufmann/wn-uploader-plugin",
-    "type": "winter-plugin",
-    "description": "Plugin providing frontend upload blocks for Winter CMS",
-    "homepage": "https://github.com/helmutkaufmann/wn-uploader-plugin",
-    "keywords": ["winter cms", "winter", "plugin", "uploader", "uppy"],
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Helmut Kaufmann",
-            "email": "contact@mercator.li",
-            "role": "Original Author"
-        }
-    ],
-    "support": {
-        "issues": "https://github.com/helmutkaufmann/wn-uploader-plugin/issues",
-        "source": "https://github.com/helmutkaufmann/wn-uploader-plugin"
-    },
+{
     "require": {
-        "endroid/qr-code": "^6.0",
-        "winter/wn-blocks-plugin": "dev-main as 1.0.0"
-    },
-    "extra": {
-        "installer-name": "uploader"
+        "endroid/qr-code": "^6.0"
     }
 }
