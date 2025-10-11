@@ -1,0 +1,9 @@
+{% if form and uploaderUserIsPermissioned(formId, userId) %}
+    <div id="uppy"></div>
+    {% include 'mercator.uploader::uppyCore' with {
+        formID: formId,
+        userID: userId
+    } %}
+{% else %}
+    <p>Upload form not found or user not aurhorized.</p>
+{% endif %}

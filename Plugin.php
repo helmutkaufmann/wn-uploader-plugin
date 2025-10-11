@@ -28,7 +28,7 @@ class Plugin extends PluginBase
     {
         return [
             "name" => "Uploader",
-            "description" => "Managed file uploads via DB-defined forms + route-based frontend (UIKit + Uppy).",
+            "description" => "Managed file uploads via databse-defined forms and route-based frontend (UIKit + Uppy). Includes a CMS component without styling.",
             "author" => "Helmut Kaufmann, Kuessnacht am Rigi, Switzerland",
             "icon" => "icon-upload",
         ];
@@ -150,4 +150,5 @@ class Plugin extends PluginBase
             \Mercator\Uploader\Components\Uploader::class => 'uploader'
         ];
     }
+
 }

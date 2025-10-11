@@ -2,14 +2,19 @@
 
 use Cms\Classes\ComponentBase;
 use Mercator\Uploader\Models\UploadForm;
+use Log;
 
 class Uploader extends ComponentBase
 {
+    public $form;
+    public $formId;
+    public $userId;
+
     public function componentDetails()
     {
         return [
-            'name' => 'Uploader',
-            'description' => 'Displays a file upload form by token'
+            'name'        => 'Uploader',
+            'description' => 'Displays a frontend upload form.'
         ];
     }
 
@@ -17,38 +22,48 @@ class Uploader extends ComponentBase
     {
         return [
             'formId' => [
-                'title' => 'Form ID',
-                'description' => 'Uploader form token (form_id)',
-                'type' => 'string',
+                'title'             => 'Form ID',
+                'description'       => 'The upload form token (form_id).',
+                'type'              => 'string',
+                'validationPattern' => '^[A-Za-z0-9]+$',
+                'validationMessage' => 'Form ID must be alphanumeric.',
             ],
+            'userId' => [
+                'title'       => 'User ID (optional)',
+                'description' => 'Optional user token to link uploads to a specific user.',
+                'type'        => 'string',
+                'default'     => ''
+            ]
         ];
     }
 
     public function onRun()
     {
-        $this->page['form'] = $this->loadForm();
+        $this->formId = $this->property('formId');
+        $this->userId = $this->property('userId') ?: null;
+        $this->form   = $this->loadForm($this->formId);
+
+        // expose to Twig
+        $this->page['form']   = $this->form;
+        $this->page['formId'] = $this->formId;
+        $this->page['userId'] = $this->userId;
     }
 
-    protected function loadForm()
+    protected function loadForm(string $formId)
     {
-        $id = $this->property('formId');
-        return UploadForm::where('form_id', $id)->first();
-    }
+        if (!$formId) {
+            Log::warning('Uploader: missing formId.');
+            return null;
+        }
 
-    public function onRender()
-    {
-        $formId = $this->property('formId');
+        $form = UploadForm::where('form_id', $formId)->first();
 
-        // Instantiate the component manually
-        $component = new Uploader($this->controller, []);
-        $component->setProperty('formId', $formId);
-        $component->onRun();
+        if (!$form) {
+            Log::warning("Uploader: no form found for ID {$formId}");
+        } else {
+            Log::info("Uploader loaded form {$formId}");
+        }
 
-        // Expose component and its variables to Twig
-        $this->page['uploader'] = $component;
-        $this->page['form'] = $component->property('formId')
-            ? $component->loadForm()
-            : null;
+        return $form;
     }
 }
-

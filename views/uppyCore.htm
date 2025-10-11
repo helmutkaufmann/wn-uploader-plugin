@@ -75,13 +75,13 @@
             allowMultipleUploads: true
         })
         .on('upload-success', function (file, response) {
-            UIkit.notification({ message: 'Upload successfully completed.', status: 'success' });
+            // do nothing
         })
         .on('upload-error', function (file, error, response)  {
-            UIkit.notification({ message: response.body, status: 'danger' });
+            alert(message);
         })
         .on('restriction-failed', function (file, error) {
-            UIkit.notification({ message: error, status: 'warning' });
+            alert(message);
         });
     });
 </script>

@@ -175,6 +175,11 @@ class FrontendRoutes
 
         return response()->json([
             'success' => true,
+            'message' => 'File uploaded',
+        ], 200);
+        
+        return response()->json([
+            'success' => true,
             'count'   => count($stored),
             'files'   => $stored,
         ]);
