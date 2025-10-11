@@ -31,18 +31,6 @@ fields:
         </div>
     </div>
 {% else %}
-
-    {# Uppy script and style #}
-    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
-    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
-    <style>
-        /* Make Uppy Dashboard full width */
-        .uppy-Dashboard,
-        .uppy-Dashboard-inner {
-            max-width: 100% !important;
-            width: 100% !important;
-        }
-    </style>
     
     <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
@@ -61,6 +49,18 @@ fields:
             {% endif %}
         {% endif %}
     </div>
+    
+    {# Uppy script and style #}
+    <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+    <style>
+        /* Make Uppy Dashboard full width */
+        .uppy-Dashboard,
+        .uppy-Dashboard-inner {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    </style>
 
     <script>
         // Get the userID from the server-side variable

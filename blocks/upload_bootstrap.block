@@ -32,21 +32,7 @@ fields:
     </div>
   </div>
 {% else %}
-
-  {# Uppy #}
-  <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
-  <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
-
-  <style>
-    /* Make Uppy Dashboard full width */
-    .uppy-Dashboard,
-    .uppy-Dashboard-inner {
-      max-width: 100% !important;
-      width: 100% !important;
-    }
-  </style>
  
-
   <div class="container my-3">
     <div id="uploader-alerts"></div>
 
@@ -72,6 +58,18 @@ fields:
       </div>
     </div>
   </div>
+  
+  {# Uppy #}
+  <script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+  <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+  <style>
+    /* Make Uppy Dashboard full width */
+    .uppy-Dashboard,
+    .uppy-Dashboard-inner {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+  </style>
 
   <script>
     // Bootstrap alert helper
