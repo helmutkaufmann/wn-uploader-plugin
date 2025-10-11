@@ -146,8 +146,8 @@ Notifications are sent to the **authorized user** defined in the form. The email
 | Scenario                                                 | Allowed          |
 | -------------------------------------------------------- | ---------------- |
 | Valid `formId` and permitted `userId`                    | ✅ Upload allowed |
-| Valid `formId`, no `userId`, and `restricted  = true`    | ✅ Upload allowed |
-| Valid `formId`, invalid `userId`                         | ❌ Upload denied  |
+| Valid `formId`, no `userId`, and `restricted`  = false   | ✅ Upload allowed |
+| Valid `formId`, invalid `userId` and `restricted` = true | ❌ Upload denied  |
 | Missing or invalid `formId`                              | ❌ Upload denied  |
 
 All checks are enforced server-side.
