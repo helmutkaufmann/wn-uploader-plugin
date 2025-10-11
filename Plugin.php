@@ -18,13 +18,6 @@ use Log;
 require_once "vendor/autoload.php";
 class Plugin extends PluginBase
 {
-    /**
-     * @var array Plugin dependencies
-     */
-    public $require = [
-        'Winter.Blocks',
-    ];
-
     public function pluginDetails()
     {
         return [
