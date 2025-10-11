@@ -15,7 +15,6 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Log;
 
-require_once "vendor/autoload.php";
 class Plugin extends PluginBase
 {
     public function pluginDetails()
