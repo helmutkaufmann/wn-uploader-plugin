@@ -1,5 +1,9 @@
 # Uploader Plugin for WinterCMS
 
+<p align="center">
+  <img src="hero-uploader.png" alt="Uploader Plugin" width="100%">
+</p>
+
 The **Uploader Plugin** extends WinterCMS with a backend-managed upload system and frontend components for user file submission.  
 Editors create so-called "Upload Forms" in the backend and optionally assign which users are allowed to upload to each form.  
 Frontend pages or blocks reference these backend-defined forms using their **Form ID**, and optionally include a **User ID** for controlled access.
