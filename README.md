@@ -25,11 +25,10 @@ All upload logic depends on backend definitions — no form can function until i
 
 ## 📦 Installation
 
-Clone the plugin into your WinterCMS installation:
+Install the plugin via Composer:
 
 ```bash
-cd winter/plugins
-git clone https://github.com/helmutkaufmann/wn-uploader-plugin.git mercator/uploader
+composer require mercator/wn-uploader-plugin
 ````
 
 Then apply database migrations:
