@@ -67,7 +67,7 @@
                 preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
             })
         {% endif %}
-        .use(Uppy.Webcam)
+        .use(Uppy.Webcam, { showVideoSourceDropdown: true })
         .use(Uppy.Audio)
         .use(Uppy.ScreenCapture)
         .use(Uppy.XHRUpload, {
