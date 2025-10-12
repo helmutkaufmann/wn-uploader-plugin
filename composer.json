@@ -1,5 +1,5 @@
 {    
-    "name": "helmutkaufmann/wn-uploader-plugin",
+    "name": "mercator/wn-uploader-plugin",
     "type": "winter-plugin",
     "description": "Plugin providing frontend upload blocks for Winter CMS",
     "homepage": "https://github.com/helmutkaufmann/wn-uploader-plugin",
