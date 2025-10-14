@@ -1,9 +1,11 @@
-{# Partial to be called with formID and optionally userID  #}
-{# Get the Upload Form from the formID#} 
-{% set form = uploaderForm(formID) %} 
+{# Partial to be called with formID and optionally userID #}
+{# Get the Upload Form from the formID#}
+{% set form = uploaderForm(formID) %}
+
 {# Uppy script and style #}
-<script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
 <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v5.1.5/uppy.css" />
+<script src="https://releases.transloadit.com/uppy/v5.1.5/uppy.min.js"></script>
+
 <style>
     /* Make Uppy Dashboard full width */
     .uppy-Dashboard,
@@ -13,11 +15,40 @@
     }
 </style>
 
-<script>
-    const userId = {{ userID |json_encode|raw }};
-    const formId = {{ formID |json_encode | raw }};
+<div id="uppy-{{ formID }}"></div>
 
+<script>
+  
+    /**
+     * Dynamically loads a script from a URL, ensuring it is only fetched and executed once.
+     */
+    const lazyLoadScript = (() => {
+        const loadedScripts = new Map();
+        return (url) => {
+            if (loadedScripts.has(url)) return loadedScripts.get(url);
+            const scriptPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = (event) => {
+                    console.log(`Successfully loaded script: ${url}`);
+                    resolve(event);
+                };
+                script.onerror = (error) => {
+                    console.error(`Failed to load script: ${url}`);
+                    loadedScripts.delete(url);
+                    reject(error);
+                };
+                document.head.appendChild(script);
+            });
+            loadedScripts.set(url, scriptPromise);
+            return scriptPromise;
+        };
+    })();
+  
     document.addEventListener("DOMContentLoaded", function() {
+        const userId = {{ userID |json_encode|raw }};
+        const formId = {{ formID |json_encode | raw }};
+
         // Build endpoint
         const currentPath = window.location.pathname.replace(/\/+$/, '');
         const endpoint = currentPath.match(new RegExp(formId + '$'))
@@ -45,45 +76,96 @@
             restrictions: {
                 maxNumberOfFiles: null,
                 allowedFileTypes: allowedTypes,
-                maxFileSize: (maxFileSize === 'null') ? null : maxFileSize,
-                maxTotalFileSize: (maxTotalFileSize === 'null') ? null : maxTotalFileSize
+                maxFileSize: (maxFileSize === null) ? null : maxFileSize,
+                maxTotalFileSize: (maxTotalFileSize === null) ? null : maxTotalFileSize,
             }
         })
         .use(Uppy.Dashboard, {
             inline: true,
-            target: '#uppy',
+            target: '#uppy-' + formId,
             proudlyDisplayPoweredByUppy: false,
             showProgressDetails: true,
             note: notes.join(' | ')
         })
         {% if form.use_image_editor and not form.auto_upload_enabled %}
-        .use(Uppy.ImageEditor)
+        .use(Uppy.ImageEditor, { target: Uppy.Dashboard })
         {% endif %}
         {% if form.client_resize_enabled %}
-            .use(Uppy.Compressor, {
-                quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
-                maxWidth: {{ form.client_resize_max_width ?? 1920 }},
-                maxHeight: {{ form.client_resize_max_height ?? 1080 }},
-                preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
-            })
+        .use(Uppy.Compressor, {
+            quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
+            maxWidth: {{ form.client_resize_max_width ?? 1920 }},
+            maxHeight: {{ form.client_resize_max_height ?? 1080 }},
+            preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+        })
         {% endif %}
-        .use(Uppy.Webcam, { showVideoSourceDropdown: true })
-        .use(Uppy.Audio)
-        .use(Uppy.ScreenCapture)
+        .use(Uppy.Webcam, { target: Uppy.Dashboard, showVideoSourceDropdown: true })
+        .use(Uppy.Audio, { target: Uppy.Dashboard })
+        .use(Uppy.ScreenCapture, { target: Uppy.Dashboard })
         .use(Uppy.XHRUpload, {
             endpoint: endpoint,
             fieldName: 'file',
             formData: true,
-            allowMultipleUploads: true
         })
-        .on('upload-success', function (file, response) {
-            // do nothing
+        .on('upload-error', (file, error, response) => {
+            uppy.info(error.message, 'error', 5000);
         })
-        .on('upload-error', function (file, error, response)  {
-            alert(message);
+        .on('restriction-failed', (file, error) => {
+            uppy.info(error.message, 'error', 5000);
         })
-        .on('restriction-failed', function (file, error) {
-            alert(message);
+        .on('file-removed', (file) => {
+            if (file.preview && file.preview.startsWith('blob:')) {
+                URL.revokeObjectURL(file.preview);
+            }
+        })
+        .on('upload-success', (file) => {
+            if (file.preview && file.preview.startsWith('blob:')) {
+                URL.revokeObjectURL(file.preview);
+            }
         });
+
+        {# Handle thumbnail creation for .heif and .heic files #}
+        {% set allowed_types_lower = form.allowed_types | lower %}
+        {% if 'heic' in allowed_types_lower or 'heif' in allowed_types_lower %}
+
+            // A lightweight SVG spinner to show during conversion
+            const svgSpinner = `<svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="8"/><circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="212"><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1s" repeatCount="indefinite"/></circle></svg>`;
+            const placeholder = `data:image/svg+xml;base64,${btoa(svgSpinner)}`;
+
+            uppy.on('file-added', async (file) => {
+                const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
+
+                if (isHeic) {
+                    try {
+                        
+                        // Lazy load coverter
+                        await lazyLoadScript("https://cdn.jsdelivr.net/npm/heic-to@1.3.0/dist/iife/heic-to.js");
+                        
+                        // Set a placeholder immediately for better UX
+                        uppy.setFileState(file.id, {
+                            preview: placeholder
+                        });
+
+                        // Convert the HEIC blob to a JPEG blob for the preview
+                        const convertedBlob = await HeicTo({
+                            blob: file.data,
+                            toType: "image/jpeg",
+                            quality: 0.5
+                        });
+
+                        const previewUrl = URL.createObjectURL(convertedBlob);
+
+                        // Update the preview with the generated thumbnail
+                        uppy.setFileState(file.id, {
+                            preview: previewUrl
+                        });
+
+                    } catch (error) {
+                        console.error('Error converting HEIC/HEIF file:', error);
+                        uppy.setFileState(file.id, { preview: null }); // Remove broken preview
+                        uppy.info('Could not create a preview for this HEIC/HEIF file.', 'error', 5000);
+                    }
+                }
+            });
+        {% endif %}
     });
 </script>

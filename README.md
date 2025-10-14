@@ -144,6 +144,15 @@ Notifications are sent to the **authorized user** defined in the form. The email
 
 ---
 
+### 4. Limitations for HEIF/HEIC
+
+HEIF/HEIC images can be uploaded provided heif/heic are specified as allowed file extensions in the backend. In this caase, 
+resizing and editing wll not be available for these types. Note that browsers do not support thse image types. Thefore
+a conversion libray will be lazy-loaded when such images are uploaded. This library is rather large and might into your
+bandwidth.
+
+---
+
 
 ## 🔐 Access Summary
 
