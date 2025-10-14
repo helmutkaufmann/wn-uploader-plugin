@@ -119,7 +119,7 @@
         })
         .on('upload-success', (file) => {
             if (file.preview && file.preview.startsWith('blob:')) {
-                URL.revokeObjectURL(file.preview);
+                // URL.revokeObjectURL(file.preview);
             }
         });
 
