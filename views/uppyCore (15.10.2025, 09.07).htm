@@ -137,7 +137,7 @@
                     try {
                         
                         // Lazy load coverter
-                        await lazyLoadScript("/plugins/mercator/uploader/assets/heic-to.js");
+                        await lazyLoadScript("https://cdn.jsdelivr.net/npm/heic-to@1.3.0/dist/iife/heic-to.js");
                         
                         // Set a placeholder immediately for better UX
                         uppy.setFileState(file.id, {
