@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@uppy/core@5.1.0/lib/EventManager.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+export default class EventManager{#e;#t=[];constructor(e){this.#e=e}on(e,t){return this.#t.push([e,t]),this.#e.on(e,t)}remove(){for(const[e,t]of this.#t.splice(0))this.#e.off(e,t)}onFilePause(e,t){this.on("upload-pause",((s,l)=>{e===s?.id&&t(l)}))}onFileRemove(e,t){this.on("file-removed",(s=>{e===s.id&&t(s.id)}))}onPause(e,t){this.on("upload-pause",((s,l)=>{e===s?.id&&t(l)}))}onRetry(e,t){this.on("upload-retry",(s=>{e===s?.id&&t()}))}onRetryAll(e,t){this.on("retry-all",(()=>{this.#e.getFile(e)&&t()}))}onPauseAll(e,t){this.on("pause-all",(()=>{this.#e.getFile(e)&&t()}))}onCancelAll(e,t){this.on("cancel-all",((...s)=>{this.#e.getFile(e)&&t(...s)}))}onResumeAll(e,t){this.on("resume-all",(()=>{this.#e.getFile(e)&&t()}))}}
+//# sourceMappingURL=/sm/97e1ff99c7b1fe71227e402d0b14deba06f638cdf88940e134c30819239f8f8f.map

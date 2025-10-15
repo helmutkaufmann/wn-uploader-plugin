@@ -1,0 +1,141 @@
+{#
+    Partial to be called with formID and optionally userID
+    Usage: {% partial 'uppy-uploader' formID='my-form' userID=user.id %}
+#}
+{# Get the Upload Form from the formID #}
+{% set form = uploaderForm(formID) %}
+
+{# Uppy CSS from CDN - UPDATED VERSION #}
+<link rel="stylesheet" href="https://releases.transloadit.com/uppy/v3.24.3/uppy.min.css" />
+
+<style>
+    /* Make Uppy Dashboard full width */
+    .uppy-Dashboard,
+    .uppy-Dashboard-inner {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+</style>
+
+<div id="uppy-{{ formID }}"></div>
+
+<script type="module">
+    // Import Uppy and its plugins from the ES module build - UPDATED VERSION
+    import {
+        Uppy,
+        Dashboard,
+        ImageEditor,
+        Compressor,
+        Webcam,
+        Audio,
+        ScreenCapture,
+        XHRUpload
+    } from 'https://releases.transloadit.com/uppy/v3.24.3/uppy.min.mjs';
+
+    // Get variables from Twig context
+    const userId = {{ userID|default('null')|json_encode|raw }};
+    const formId = {{ formID|json_encode|raw }};
+
+    // Build endpoint URL
+    const currentPath = window.location.pathname.replace(/\/+$/, '');
+    const endpoint = currentPath.endsWith(formId)
+        ? `${currentPath}/upload`
+        : `/mercator/uploader/endpoint/${formId}${userId ? '/' + userId : ''}`;
+
+    // --- Uppy Configuration ---
+    const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";
+    const allowedTypes = allowedTypesStr ? allowedTypesStr.split(',').map(s => s.trim()).filter(Boolean) : null;
+    const maxFileSize = {{ form.max_file_size > 0 ? (form.max_file_size * 1024 * 1024) : 'null' }};
+    const maxTotalFileSize = {{ form.max_total_file_size > 0 ? (form.max_total_file_size * 1024 * 1024) : 'null' }};
+    const notes = [];
+    if (allowedTypes) notes.push(`Allowed: ${allowedTypes.join(' ')}`);
+    if (maxFileSize !== null) notes.push('Max per file: {{ form.max_file_size }} MB');
+    if (maxTotalFileSize !== null) notes.push('Total: {{ form.max_total_file_size }} MB');
+
+    // --- Uppy Initialization ---
+    const uppy = new Uppy({
+        autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
+        allowMultipleUploadBatches: true,
+        restrictions: {
+            maxNumberOfFiles: null,
+            allowedFileTypes: allowedTypes,
+            maxFileSize: maxFileSize,
+            maxTotalFileSize: maxTotalFileSize,
+        }
+    });
+
+    uppy.use(Dashboard, {
+        inline: true,
+        target: `#uppy-${formId}`,
+        proudlyDisplayPoweredByUppy: false,
+        showProgressDetails: true,
+        note: notes.join(' | ')
+    });
+
+    {% if form.use_image_editor and not form.auto_upload_enabled %}
+    uppy.use(ImageEditor, { target: Dashboard });
+    {% endif %}
+
+    {% if form.client_resize_enabled %}
+    uppy.use(Compressor, {
+        quality: {{ form.client_resize_quality|default(0.8) }},
+        maxWidth: {{ form.client_resize_max_width|default(1920) }},
+        maxHeight: {{ form.client_resize_max_height|default(1080) }},
+        preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+    });
+    {% endif %}
+
+    uppy.use(Webcam, { target: Dashboard, showVideoSourceDropdown: true });
+    uppy.use(Audio, { target: Dashboard });
+    uppy.use(ScreenCapture, { target: Dashboard });
+    uppy.use(XHRUpload, {
+        endpoint: endpoint,
+        fieldName: 'file',
+        formData: true,
+    });
+
+    // --- Uppy Event Listeners ---
+    uppy.on('upload-error', (file, error) => uppy.info(error.message || 'An unknown error occurred.', 'error', 5000));
+    uppy.on('restriction-failed', (file, error) => uppy.info(error.message, 'error', 5000));
+    uppy.on('file-removed', (file) => {
+        if (file.preview && file.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(file.preview);
+        }
+    });
+
+    // --- HEIC/HEIF Preview Handling ---
+    {% set allowed_types_lower = form.allowed_types|lower %}
+    {% if 'heic' in allowed_types_lower or 'heif' in allowed_types_lower %}
+
+    const svgSpinner = `<svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="8"/><circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="212"><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1s" repeatCount="indefinite"/></circle></svg>`;
+    const placeholder = `data:image/svg+xml;base64,${btoa(svgSpinner)}`;
+
+    uppy.on('file-added', async (file) => {
+        const fileName = file.name.toLowerCase();
+        const isHeic = file.type === 'image/heic' || file.type === 'image/heif' || fileName.endsWith('.heic') || fileName.endsWith('.heif');
+
+        if (isHeic) {
+            try {
+                uppy.setFileState(file.id, { preview: placeholder });
+
+                const { default: heic2any } = await import('https://esm.sh/heic2any@0.0.4');
+
+                const convertedBlob = await heic2any({
+                    blob: file.data,
+                    toType: "image/jpeg",
+                    quality: 0.5
+                });
+
+                const previewUrl = URL.createObjectURL(convertedBlob);
+                uppy.setFileState(file.id, { preview: previewUrl });
+
+            } catch (error) {
+                console.error('Error converting HEIC/HEIF file:', error);
+                uppy.setFileState(file.id, { preview: null });
+                uppy.info('Could not create a preview for this HEIC/HEIF file.', 'error', 5000);
+            }
+        }
+    });
+    {% endif %}
+
+</script>
