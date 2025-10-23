@@ -1,2 +1,6 @@
+Currently installed in /assets:
 uppy: 5.1.6
 heic-to: 1.3
+
+Getting the latest
+curl get https://github.com/hoppergee/heic-to/blob/main/dist/iife/heic-to.js > heic-to.js; gzip heic-to.js; mv heic-to.js.gz heic-to.js

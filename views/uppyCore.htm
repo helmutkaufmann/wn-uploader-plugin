@@ -1,8 +1,5 @@
-{# Partial to be called with formID and optionally userID #}
-{# Get the Upload Form from the formID#}
-{% set form = uploaderForm(formID) %}
-
-{# Uppy script and style #}
+{# Partial to be called with formID and optionally userID #} {# Get the Upload Form from the formID#} {% set form =
+uploaderForm(formID) %} {# Uppy script and style #}
 <link rel="stylesheet" href="/plugins/mercator/uploader/assets/uppy.min.css" />
 <script src="/plugins/mercator/uploader/assets/uppy.min.js"></script>
 
@@ -18,7 +15,7 @@
 <div id="uppy-{{ formID }}"></div>
 
 <script>
-  
+
     /**
      * Dynamically loads a script from a URL, ensuring it is only fetched and executed once.
      */
@@ -43,7 +40,7 @@
             return scriptPromise;
         };
     })();
-  
+
     document.addEventListener("DOMContentLoaded", function() {
         const userId = {{ userID |json_encode|raw }};
         const formId = {{ formID |json_encode | raw }};
@@ -135,10 +132,10 @@
 
                 if (isHeic) {
                     try {
-                        
+
                         // Lazy load coverter
                         await lazyLoadScript("/plugins/mercator/uploader/assets/heic-to.js");
-                        
+
                         // Set a placeholder immediately for better UX
                         uppy.setFileState(file.id, {
                             preview: placeholder
