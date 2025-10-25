@@ -1,4 +1,4 @@
-name: Uploader Bootstrap - QR Code
+name: Uppy - QR Code - Bootstrap
 author: Helmut Kaufmann
 description: Displays a QR Code linking to an upload page
 tags: ["pages"]
@@ -23,50 +23,45 @@ fields:
             none: Do not render
             above: Above uploader
             below: Below uploader
-        comment: Defines the position or absence of the title and description (as defined in the backend).
+        comment: Defines the position or absence of the title and description (as defind in the backend).
 ==
-{# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
+{# Prefer the explicit field; otherwise take ?id=XXX from the URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
 
+{# Use current page URL if none is provided #}
+{% set __url = (url is empty or url == '') ? this.page.url : url %}
+
 {% if not form %}
-  <div class="container my-3">
-    <div class="alert alert-danger mb-0" role="alert">
-      Upload form not found.
-    </div>
-  </div>
-{% else %}
-
-  {% set QRCode = uploaderQRCode(url('/' ~ url ~ '?id=' ~ form_id), 400, 4) %}
-
-  <div class="container my-3">
-    <div class="card">
-      <div class="card-body">
-
-        {# ABOVE #}
-        {% if text_position == 'above' %}
-          <h3 class="h5 mb-2">{{ form.title }}</h3>
-          {% if form.description %}
-            <p class="text-muted mb-3">{{ form.description|raw }}</p>
-          {% endif %}
-        {% endif %}
-
-        <div class="d-flex justify-content-center my-2">
-          <a href="{{ url('/' ~ url ~ '?id=' ~ form_id) }}">
-            <img src="{{ QRCode }}" width="300" height="300" class="img-fluid" alt="Upload QR code">
-          </a>
+    <div class="container my-4">
+        <div class="alert alert-danger" role="alert">
+            Upload form not found.
         </div>
-
-        {# BELOW #}
-        {% if text_position == 'below' %}
-          <h3 class="h5 mt-3 mb-2">{{ form.title }}</h3>
-          {% if form.description %}
-            <p class="text-muted mb-0">{{ form.description|raw }}</p>
-          {% endif %}
-        {% endif %}
-
-      </div>
     </div>
-  </div>
+{% else %}
+    {% set QRCode = uploaderQRCode(url(__url ~ "?id=" ~ form_id), 400, 4) %}
 
+    <div class="card my-3">
+        <div class="card-body text-center">
+            {# ABOVE #}
+            {% if text_position == 'above' %}
+                <h3 class="h5 mb-2">{{ form.title }}</h3>
+                {% if form.description %}
+                    <p class="small text-muted mb-3">{{ form.description|raw }}</p>
+                {% endif %}
+            {% endif %}
+
+            <a href="{{ url(__url ~ '?id=' ~ form_id) }}">
+                <img src="{{ QRCode }}" alt="QR Code" class="img-fluid rounded shadow-sm" width="300" height="300">
+            </a>
+
+            {# BELOW #}
+            {% if text_position == 'below' %}
+                <h3 class="h5 mt-3 mb-2">{{ form.title }}</h3>
+                {% if form.description %}
+                    <p class="small text-muted mb-0">{{ form.description|raw }}</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
 {% endif %}

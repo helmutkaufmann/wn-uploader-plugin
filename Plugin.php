@@ -152,9 +152,9 @@ class Plugin extends PluginBase
     {
         return [
             "mercator_uploader_qrcode" => '$/mercator/uploader/blocks/qrcode.block',
-            "mercator_uploader_qrcode_bootstrap" => '$/mercator/uploader/blocks/qrcode_bootstrap.block',
+            // "mercator_uploader_qrcode_bootstrap" => '$/mercator/uploader/blocks/qrcode_bootstrap.block',
             "mercator_uploader_uploader" => '$/mercator/uploader/blocks/upload.block',
-            "mercator_uploader_uploader_bootstrap" => '$/mercator/uploader/blocks/upload_bootstrap.block',
+            // "mercator_uploader_uploader_bootstrap" => '$/mercator/uploader/blocks/upload_bootstrap.block',
         ];
     }
 

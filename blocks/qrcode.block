@@ -1,4 +1,4 @@
-name: Uploader - QR Code
+name: Uppy - QR Code
 author: Helmut Kaufmann
 description: Displays a QR Code linking to an upload page
 tags: ["pages"]
@@ -29,6 +29,8 @@ fields:
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
 
+{# if no URL provided, use current page URL #}
+
 {% if not form %}
     <div class="uk-container uk-margin">
         <div class="uk-alert-danger uk-card uk-card-body">
@@ -36,30 +38,27 @@ fields:
         </div>
     </div>
 {% else %}
+    {% set QRCode = uploaderQRCode(url(this.page.url  ~ "?id=" ~ form_id), 400, 4) %}
 
-    {% set QRCode=uploaderQRCode(url("/" ~ url ~ "?id="~ form_id), 400, 4) %}
-    
-    </div>
-        <div class="uk-card uk-card-default uk-card-body uk-margin">
-            {# ABOVE #}
-            {% if text_position == 'above' %}
-                <h3 class="uk-margin-small">{{ form.title }}</h3>
-                {% if form.description %}
-                    <p class="uk-text-meta">{{ form.description|raw }}</p>
-                {% endif %}
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
+        {# ABOVE #}
+        {% if text_position == 'above' %}
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
             {% endif %}
-            <div class="uk-align-center">
-                <a href="{{url('/' ~ url ~ '?id='~ form_id)}}">
-                    <img src="{{QRCode}}"  width='300' height='300' />
-                </a>
-            </div>
-            {# BELOW #}
-            {% if text_position == 'below' %}
-                <h3 class="uk-margin-small">{{ form.title }}</h3>
-                {% if form.description %}
-                    <p class="uk-text-meta">{{ form.description|raw }}</p>
-                {% endif %}
-            {% endif %}
+        {% endif %}
+        <div class="uk-align-center">
+            <a href="{{ url(this.page.url  ~ '?id=' ~ form_id) }}">
+                <img src="{{ QRCode }}" width="300" height="300" />
+            </a>
         </div>
-
+        {# BELOW #}
+        {% if text_position == 'below' %}
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
+            {% endif %}
+        {% endif %}
+    </div>
 {% endif %}
