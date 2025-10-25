@@ -176,6 +176,7 @@ All checks are enforced server-side.
   * `uploaderForm(form_id)`
   * `uploaderUserIsPermissioned(form_id, user_id)`
   * `uploaderQRCode(url, size, margin)`
+  * `uploaderUploaderOpen(form_id [, user_id])` returns 0 when upload is authorized.
 
 ---
 

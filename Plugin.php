@@ -4,6 +4,7 @@ use System\Classes\PluginBase;
 use Illuminate\Support\Facades\Route;
 use Mercator\Uploader\Models\UploadForm;
 use Mercator\Uploader\Models\UploadUser;
+use Carbon\Carbon; // <-- ADDED THIS LINE
 
 use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
@@ -13,6 +14,7 @@ use Endroid\QrCode\Label\Label;
 use Endroid\QrCode\Logo\Logo;
 use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
+use Log;
 
 class Plugin extends PluginBase
 {
@@ -88,6 +90,42 @@ class Plugin extends PluginBase
                             : false;
                     }
                 },
+
+                // --- ADDED THIS FUNCTION REGISTRATION ---
+                // Checks the form's upload time window status.
+                // Returns: 0 = OK, 1 = Too Early, 2 = Too Late, 
+                "uploaderUploaderOpen" => function ($id, $user=null): int {
+                    
+                    $form = UploadForm::where("form_id", $id)->with("users")->first();
+
+                    // Ensure we have a valid form object
+                    if (!is_object($form)) {
+                        return -1; // Form does not exist
+                    }
+                    
+                    if ($form->restricted) {
+                        if (! $form->users->where("is_active", true)->whereStrict("token", $user)->first())
+                            return -2; // User is not authorized
+                    }
+
+                    $now = Carbon::now();
+
+                    // If 'start_date' is in the future, it's not time yet.
+                    $validFrom = Carbon::parse($form->start_date);
+                    if ($now->isBefore($validFrom)) {
+                        return 1; // 1 = Too Early
+                    }
+
+                    // If 'end_date' exists is in the past, time has expired.
+                    $validUntil = Carbon::parse($form->end_date);
+                    if ($now->isAfter($validUntil)) {
+                        return 2; // 2 = Too Late
+                    }
+
+                    // f neither check failed, we are within the time window
+                    return 0; // 0 = OK
+                },
+
                 // Create a QR Code (as an inline image data URI from astring ($data)
                 // See blocks/qrcode.block for an example
                 "uploaderQRCode" => function ($data, $size = 300, $margin = 6) {

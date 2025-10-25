@@ -1,6 +1,6 @@
 name: Uploader
 author: Helmut Kaufmann
-description: Uploader for backd-defined Upload Form
+description: File Uploader
 tags: ["pages","upload"]
 fields:
     form_id:
@@ -24,14 +24,17 @@ fields:
 {% set form = __fid ? uploaderForm(__fid) : null %}
 {% set user = input('user')|default("NONE") %}
 
-{% if not uploaderUserIsPermissioned(__fid, user) %}
-    <div class="uk-container uk-margin">
-        <div class="uk-alert-danger uk-card uk-card-body">
-            Upload form not found or user not permissioned.
+{% if uploaderUploaderOpen (__fid, user) %}
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
+        <h3 class="uk-margin-small">{{ form.title }}</h3>
+        {% if form.description %}
+            <p class="uk-text-meta">{{ form.description|raw }}</p>
+        {% endif %}
+        <div class="uk-alert-danger" uk-alert>
+            <p>Upload form not found, user not permissioned or outside upload time window.</p>
         </div>
     </div>
 {% else %}
-    
     <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
         {% if text_position == 'above' %}

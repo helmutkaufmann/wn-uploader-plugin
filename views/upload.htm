@@ -6,11 +6,17 @@
         <meta name="csrf-token" content="{{ csrf }}" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
     </head>
-    <body class="uk-container uk-margin">
-        {% if not uploaderUserIsPermissioned(id, user) %}
 
-        <div class="uk-container uk-margin">
-            <div class="uk-alert-danger uk-card uk-card-body">Upload form not found or user not permissioned.</div>
+    <body class="uk-container uk-margin">
+        {# UIKit #}
+        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/js/uikit.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/css/uikit.min.css" />
+        
+        {% if  uploaderUploaderOpen(id, user) %}
+        <div class="uk-card uk-card-default uk-card-body uk-margin">
+            <div class="uk-container uk-margin">
+                <div class="uk-alert-danger uk-card uk-card-body">Upload form not found, user not permissioned oroutside of the upload time window.</div>
+            </div>
         </div>
 
         {% else %} {% set form = uploaderForm(id) %}
@@ -22,10 +28,6 @@
 
             <div id="uppy" class="uk-margin"></div>
         </div>
-
-        {# UIKit #}
-        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/js/uikit.min.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/css/uikit.min.css" />
 
         <div id="uppy"></div>
         {% include 'mercator.uploader::uppyCore' with { formID: id, userID: user } %} {% endif %}
