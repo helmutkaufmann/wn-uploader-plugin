@@ -2,14 +2,12 @@ name: Uppy - File Uploader
 author: Helmut Kaufmann
 description: File Uploader
 tags: ["pages","upload"]
-
 fields:
     form_id:
-        label: Upload Form
-        type: dropdown
-        options: '\Mercator\Uploader\Models\UploadForm::getActiveFormsOptions'
+        label: Form ID (optional)
+        type: text
         span: left
-        comment: "Select a default form. This can be overridden by a URL parameter (e.g., ?id=FORM_ID)."
+        comment: If left blank, the block expects the URL to contain a ?id=XXX and will render form XXX.
     text_position:
         label: Title and Description Position
         type: dropdown
@@ -21,7 +19,6 @@ fields:
             below: Below uploader widget
         comment: Defines the position or absence of the title and description (as defind in the backend).
 ==
-{# Get Form ID, preferring URL param over block setting #}
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}

@@ -1,4 +1,4 @@
-name: Uppy - File Uploader - Bootstrap
+name: Uploader - Bootstrap
 author: Helmut Kaufmann
 description: File Uploader
 tags: ["pages","upload"]
@@ -24,20 +24,20 @@ fields:
 {% set form = __fid ? uploaderForm(__fid) : null %}
 {% set user = input('user')|default("NONE") %}
 
-{% if uploaderUploaderOpen(__fid, user) %}
-    <div class="card my-3">
+{% if uploaderUploaderOpen (__fid, user) %}
+    <div class="card mb-3">
         <div class="card-body">
             <h3 class="h5 mb-2">{{ form.title }}</h3>
             {% if form.description %}
                 <p class="small text-muted mb-3">{{ form.description|raw }}</p>
             {% endif %}
-            <div class="alert alert-danger mb-0" role="alert">
+            <div class="alert alert-danger" role="alert">
                 Upload form not found, user not permissioned or outside upload time window.
             </div>
         </div>
     </div>
 {% else %}
-    <div class="card my-3">
+    <div class="card mb-3">
         <div class="card-body">
             {# ABOVE #}
             {% if text_position == 'above' %}
@@ -51,7 +51,7 @@ fields:
 
             {# BELOW #}
             {% if text_position == 'below' %}
-                <h3 class="h5 mt-3 mb-2">{{ form.title }}</h3>
+                <h3 class="h5 mb-2">{{ form.title }}</h3>
                 {% if form.description %}
                     <p class="small text-muted mb-0">{{ form.description|raw }}</p>
                 {% endif %}
@@ -60,4 +60,5 @@ fields:
     </div>
 
     {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: userId } %}
+
 {% endif %}

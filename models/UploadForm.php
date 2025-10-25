@@ -126,4 +126,21 @@ class UploadForm extends Model
     {
         // Log::info("UploadForm loaded, has users count: " . $this->users()->count());
     }
+    
+    /**
+     * Returns a list of active forms for the Blocks dropdown.
+     *
+     * @return array
+     */
+    public static function getActiveFormsOptions()
+    {
+        // You can customize this query.
+        // For example, if you have an 'is_active' column, you can add:
+        // ->where('is_active', true)
+        //
+        // This will return an array like:
+        // [ 'form_id_123' => 'My First Form Title' ]
+        return self::orderBy('title')
+                   ->lists('title', 'form_id');
+    }
 }

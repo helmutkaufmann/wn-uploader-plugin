@@ -2,20 +2,22 @@ name: Uppy - QR Code
 author: Helmut Kaufmann
 description: Displays a QR Code linking to an upload page
 tags: ["pages"]
+
 fields:
     form_id:
-        label: Form ID
-        type: text
+        label: Upload Form
+        type: dropdown
+        options: '\Mercator\Uploader\Models\UploadForm::getActiveFormsOptions'
         span: left
-        comment: The backend-defined identifier of the form.
+        comment: Select the form to generate a QR code for. This can be overridden by a URL parameter.
     url:
         label: Upload Page URL
         type: text
         span: right
-        comment: The URL must be relative to the root of the installation, with no trailing slash ("/"). /mercator/uploader/default uses the default page.
+        comment: The relative URL of the upload page (e.g., /upload-here). If left empty, the current URL will be used. /mercator/uploader/default uses the default uploader.
         default: /mercator/uploader/default
     text_position:
-        label: Title / Description position
+        label: Title / Description Position
         type: dropdown
         default: above
         span: left
@@ -28,17 +30,22 @@ fields:
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
-
-{# if no URL provided, use current page URL #}
+{% set url = url | default (this.page.url) %}
 
 {% if not form %}
     <div class="uk-container uk-margin">
         <div class="uk-alert-danger uk-card uk-card-body">
-            Upload form not found.
+            Upload form '{{ __fid|e }}' not found.
         </div>
     </div>
 {% else %}
-    {% set QRCode = uploaderQRCode(url(this.page.url  ~ "?id=" ~ form_id), 400, 4) %}
+    {% if url == "/mercator/uploader/default" %}
+      {% set targetUrl = url(url ~ '/' ~ __fid) %}
+    {% else %}
+      {% set targetUrl = url(url ~ '?id=' ~ __fid) %}
+    {% endif %}
+    {# Generate the QR code using the correct target URL #}
+    {% set QRCode = uploaderQRCode(targetUrl, 400, 4) %}
 
     <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
@@ -48,11 +55,13 @@ fields:
                 <p class="uk-text-meta">{{ form.description|raw }}</p>
             {% endif %}
         {% endif %}
+        
         <div class="uk-align-center">
-            <a href="{{ url(this.page.url  ~ '?id=' ~ form_id) }}">
-                <img src="{{ QRCode }}" width="300" height="300" />
+            <a href="{{ targetUrl }}">
+                <img src="{{ QRCode }}" width="300" height="300" alt="{{ form.title }} QR Code" />
             </a>
         </div>
+        
         {# BELOW #}
         {% if text_position == 'below' %}
             <h3 class="uk-margin-small">{{ form.title }}</h3>

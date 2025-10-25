@@ -2,22 +2,20 @@ name: Uppy - QR Code - Bootstrap
 author: Helmut Kaufmann
 description: Displays a QR Code linking to an upload page
 tags: ["pages"]
-
 fields:
     form_id:
-        label: Upload Form
-        type: dropdown
-        options: '\Mercator\Uploader\Models\UploadForm::getActiveFormsOptions'
+        label: Form ID
+        type: text
         span: left
-        comment: Select the form to generate a QR code for. This can be overridden by a URL parameter.
+        comment: The backend-defined identifier of the form.
     url:
         label: Upload Page URL
         type: text
         span: right
-        comment: The relative URL of the upload page (e.g., /upload-here). If left empty, the current URL will be used. /mercator/uploader/default uses the default uploader.
+        comment: The URL must be relative to the root of the installation, with no trailing slash ("/"). /mercator/uploader/default uses the default page.
         default: /mercator/uploader/default
     text_position:
-        label: Title / Description Position
+        label: Title / Description position
         type: dropdown
         default: above
         span: left
@@ -25,28 +23,25 @@ fields:
             none: Do not render
             above: Above uploader
             below: Below uploader
-        comment: Defines the position or absence of the title and description (as defined in the backend).
+        comment: Defines the position or absence of the title and description (as defind in the backend).
 ==
-{# Prefer explicit field; otherwise take ?id=XXX from URL #}
+{# Prefer the explicit field; otherwise take ?id=XXX from the URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
-{% set url = url | default(this.page.url) %}
+
+{# Use current page URL if none is provided #}
+{% set __url = (url is empty or url == '') ? this.page.url : url %}
 
 {% if not form %}
     <div class="container my-4">
         <div class="alert alert-danger" role="alert">
-            Upload form '{{ __fid|e }}' not found.
+            Upload form not found.
         </div>
     </div>
 {% else %}
-    {% if url == "/mercator/uploader/default" %}
-      {% set targetUrl = url(url ~ '/' ~ __fid) %}
-    {% else %}
-    {% set targetUrl = url(url ~ '?id=' ~ __fid) %}
-    {% endif %}
-    {% set QRCode = uploaderQRCode(targetUrl, 400, 4) %}
+    {% set QRCode = uploaderQRCode(url(__url ~ "?id=" ~ form_id), 400, 4) %}
 
-    <div class="card my-3 shadow-sm">
+    <div class="card my-3">
         <div class="card-body text-center">
             {# ABOVE #}
             {% if text_position == 'above' %}
@@ -56,8 +51,8 @@ fields:
                 {% endif %}
             {% endif %}
 
-            <a href="{{ targetUrl }}" class="d-inline-block">
-                <img src="{{ QRCode }}" class="img-fluid rounded" alt="{{ form.title }} QR Code" width="300" height="300">
+            <a href="{{ url(__url ~ '?id=' ~ form_id) }}">
+                <img src="{{ QRCode }}" alt="QR Code" class="img-fluid rounded shadow-sm" width="300" height="300">
             </a>
 
             {# BELOW #}

@@ -1,43 +1,45 @@
-name: Uppy - File Uploader
+name: Uppy - QR Code
 author: Helmut Kaufmann
-description: File Uploader
-tags: ["pages","upload"]
-
+description: Displays a QR Code linking to an upload page
+tags: ["pages"]
 fields:
     form_id:
-        label: Upload Form
-        type: dropdown
-        options: '\Mercator\Uploader\Models\UploadForm::getActiveFormsOptions'
+        label: Form ID
+        type: text
         span: left
-        comment: "Select a default form. This can be overridden by a URL parameter (e.g., ?id=FORM_ID)."
+        comment: The backend-defined identifier of the form.
+    url:
+        label: Upload Page URL
+        type: text
+        span: right
+        comment: The URL must be relative to the root of the installation, with no trailing slash ("/"). /mercator/uploader/default uses the default page.
+        default: /mercator/uploader/default
     text_position:
-        label: Title and Description Position
+        label: Title / Description position
         type: dropdown
         default: above
-        span: right
+        span: left
         options:
             none: Do not render
-            above: Above uploader widget
-            below: Below uploader widget
+            above: Above uploader
+            below: Below uploader
         comment: Defines the position or absence of the title and description (as defind in the backend).
 ==
-{# Get Form ID, preferring URL param over block setting #}
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
-{% set user = input('user')|default("NONE") %}
 
-{% if uploaderUploaderOpen (__fid, user) %}
-    <div class="uk-card uk-card-default uk-card-body uk-margin">
-        <h3 class="uk-margin-small">{{ form.title }}</h3>
-        {% if form.description %}
-            <p class="uk-text-meta">{{ form.description|raw }}</p>
-        {% endif %}
-        <div class="uk-alert-danger" uk-alert>
-            <p>Upload form not found, user not permissioned or outside upload time window.</p>
+{# if no URL provided, use current page URL #}
+
+{% if not form %}
+    <div class="uk-container uk-margin">
+        <div class="uk-alert-danger uk-card uk-card-body">
+            Upload form not found.
         </div>
     </div>
 {% else %}
+    {% set QRCode = uploaderQRCode(url(this.page.url  ~ "?id=" ~ form_id), 400, 4) %}
+
     <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
         {% if text_position == 'above' %}
@@ -46,7 +48,11 @@ fields:
                 <p class="uk-text-meta">{{ form.description|raw }}</p>
             {% endif %}
         {% endif %}
-        <div id="uppy" class="uk-margin"></div>
+        <div class="uk-align-center">
+            <a href="{{ url(this.page.url  ~ '?id=' ~ form_id) }}">
+                <img src="{{ QRCode }}" width="300" height="300" />
+            </a>
+        </div>
         {# BELOW #}
         {% if text_position == 'below' %}
             <h3 class="uk-margin-small">{{ form.title }}</h3>
@@ -55,7 +61,4 @@ fields:
             {% endif %}
         {% endif %}
     </div>
-    
-    {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: userId } %}
-
 {% endif %}
