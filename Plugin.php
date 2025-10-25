@@ -51,14 +51,6 @@ class Plugin extends PluginBase
                 "icon" => "icon-upload",
                 "permissions" => ["mercator.uploader.manage"],
                 "order" => 500,
-                "sideMenu" => [
-                    "forms" => [
-                        "label" => "Upload Forms",
-                        "icon" => "icon-list",
-                        "url" => \Backend::url("mercator/uploader/uploadforms"),
-                        "permissions" => ["mercator.uploader.manage"],
-                    ],
-                ],
             ],
         ];
     }
