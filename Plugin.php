@@ -38,7 +38,7 @@ class Plugin extends PluginBase
     {
         return [
             "mercator.uploader.manage" => [
-                "tab" => "Uploader",
+                "tab" => "Uploaders",
                 "label" => "Manage upload forms",
             ],
         ];
@@ -48,7 +48,7 @@ class Plugin extends PluginBase
     {
         return [
             "uploader" => [
-                "label" => "Uploader",
+                "label" => "Uploaders",
                 "url" => \Backend::url("mercator/uploader/uploadforms"),
                 "icon" => "icon-upload",
                 "permissions" => ["mercator.uploader.manage"],
