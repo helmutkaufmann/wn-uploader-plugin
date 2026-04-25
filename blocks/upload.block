@@ -26,7 +26,7 @@ fields:
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
 {% set user = input('user')|default("NONE") %}
-{% if uploaderUploaderOpen (__fid, user) %}
+{% if uploaderUploaderOpen(__fid, user) != 0 %}
     <div class="uk-alert-danger" uk-alert>
         <p>Upload form not found, user not permissioned or outside upload time window.</p>
     </div>
@@ -42,7 +42,7 @@ fields:
         {% endif %}
         
         <div id="uppy" class="uk-margin">
-            {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: userId } %}
+            {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: user } %}
         </div>
 
         {# BELOW #}

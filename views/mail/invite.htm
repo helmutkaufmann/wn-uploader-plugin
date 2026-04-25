@@ -1,20 +1,15 @@
-<h1>Hello {{ name }}</h1>
+<h1>Hello {{ name }},</h1>
 
-<p>You have been invited to upload files to <b>{{ form.title }}</b>{% if form.description %}: <i>{{ form.description|raw }}</i>
-{% else %}
-.
+<p>You have been invited to upload files to
+<h2>{{ form.title }}</h2>
+{% if form.description %}
+{{ form.description | raw }}<br>
 {% endif %}
-</p>
 
-<p>
-  Click here to open the uploader:<br>
-  <a href="{{ url }}">{{ url }}</a>
-</p>
+<p>Click here to start the uploader: <a href="{{ url }}">{{ url }}</a></p>
 
-<p>
-  You might also want to save this link as a bookmark to access it later.
-</p>
+<p>You might also want to save this link as a bookmark to access it later.</p>
 
-<p><b>Please, don't share the link as it is meant for you personally.</b></p>
+<p><b>Please, DO NOT share the link as it is meant for you personally.</b></p>
 
 <p>Thanks for uploading and have a great day!</p>

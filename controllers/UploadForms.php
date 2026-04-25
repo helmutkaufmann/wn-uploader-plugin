@@ -70,7 +70,12 @@ class UploadForms extends Controller
         $baseUrl = url("/mercator/uploader/default");
         $count = 0;
         
-        $form = \Mercator\Uploader\Models\UploadForm::find($users[0]->form->id);
+        $form = $users->first()->form;
+
+        if (!$form) {
+            \Flash::warning("Could not resolve the parent upload form.");
+            return;
+        }
 
         foreach ($users as $user) {
             if (!$user->email) {
@@ -97,7 +102,10 @@ class UploadForms extends Controller
         }
 
         \Flash::success($count . " invite(s) sent.");
-        // refresh relation list
+        $this->initForm($form);
+        $this->initRelation($form);
+
+        // Refresh the users relation list in the current form context.
         return $this->relationRefresh("users");
     }
 }

@@ -11,6 +11,18 @@ use Redirect;
 
 class FrontendRoutes
 {
+    public function showDefault()
+    {
+        $id = request()->query("id");
+        $userToken = request()->query("user");
+
+        if (!$id) {
+            return Redirect::to("/404")->with("message", "Upload form not found.");
+        }
+
+        return $this->show($id, $userToken);
+    }
+
     public function show($id, $userToken = null)
     {
         $form = UploadForm::where("form_id", $id)->first();

@@ -45,11 +45,8 @@ uploaderForm(formID) %} {# Uppy script and style #}
         const userId = {{ userID |json_encode|raw }};
         const formId = {{ formID |json_encode | raw }};
 
-        // Build endpoint
-        const currentPath = window.location.pathname.replace(/\/+$/, '');
-        const endpoint = currentPath.match(new RegExp(formId + '$'))
-            ? currentPath + '/upload'
-            : '/mercator/uploader/endpoint/' + formId + '/' + userId;
+        // Always post to the dedicated backend upload route.
+        const endpoint = '/mercator/uploader/endpoint/' + encodeURIComponent(formId) + '/' + encodeURIComponent(userId ?? 'NONE');
 
         // Allowed file types (as .ext)
         const allowedTypesStr = "{{ form.allowed_types|split(',')|map(t => '.' ~ t|trim)|join(',') }}";

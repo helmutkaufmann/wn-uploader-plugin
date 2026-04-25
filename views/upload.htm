@@ -12,7 +12,7 @@
         <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/js/uikit.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/css/uikit.min.css" />
         
-        {% if  uploaderUploaderOpen(id, user) %}
+        {% if uploaderUploaderOpen(id, user) != 0 %}
         <div class="uk-card uk-card-default uk-card-body uk-margin">
             <div class="uk-container uk-margin">
                 <div class="uk-alert-danger uk-card uk-card-body">Upload form not found, user not permissioned oroutside of the upload time window.</div>

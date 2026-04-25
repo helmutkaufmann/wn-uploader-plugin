@@ -1,8 +1,9 @@
 Hello {{ name }},
 
-You have been invited to upload files to "{{ form.title }}".
+You have been invited to upload files to "{{ form.title }}". Open the uploader: {{ url }}
 
-Open the uploader: {{ url }}
+You might also want to save this link as a bookmark to access it later.
+Please, DO NOT share the link as it is meant for you personally.
 
 Thanks for uploading and have a great day!
 

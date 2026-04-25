@@ -162,6 +162,10 @@ class Plugin extends PluginBase
     public function boot()
     {
         Route::group(["middleware" => ["web"]], function () {
+            Route::get("/mercator/uploader/default", [
+                \Mercator\Uploader\Controllers\FrontendRoutes::class,
+                "showDefault",
+            ]);
             Route::get("/mercator/uploader/default/{id}/{userToken?}", [
                 \Mercator\Uploader\Controllers\FrontendRoutes::class,
                 "show",
