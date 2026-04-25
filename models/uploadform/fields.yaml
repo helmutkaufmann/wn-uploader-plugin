@@ -89,7 +89,7 @@ tabs:
       type: text
       span: left
       tab: Pre-Processing
-      default: jpg,png,jpeg,gif,bmp,tif,tiff,webp
+      default: jpg,png,jpeg,gif,bmp,tif,tiff,heif,heic,webp,mp4,mov,webm
 
     client_resize_max_width:
       label: Max width (px)

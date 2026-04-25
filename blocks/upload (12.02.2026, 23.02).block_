@@ -26,32 +26,36 @@ fields:
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
 {% set user = input('user')|default("NONE") %}
+
 {% if uploaderUploaderOpen (__fid, user) %}
-    <div class="uk-alert-danger" uk-alert>
-        <p>Upload form not found, user not permissioned or outside upload time window.</p>
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
+        <h3 class="uk-margin-small">{{ form.title }}</h3>
+        {% if form.description %}
+            <p class="uk-text-meta">{{ form.description|raw }}</p>
+        {% endif %}
+        <div class="uk-alert-danger" uk-alert>
+            <p>Upload form not found, user not permissioned or outside upload time window.</p>
+        </div>
     </div>
 {% else %}
+    <div class="uk-card uk-card-default uk-card-body uk-margin">
         {# ABOVE #}
         {% if text_position == 'above' %}
-            <div class="uk-card uk-card-default uk-card-body uk-margin">
             <h3 class="uk-margin-small">{{ form.title }}</h3>
-                {% if form.description %}
+            {% if form.description %}
                 <p class="uk-text-meta">{{ form.description|raw }}</p>
             {% endif %}
-            </div>
         {% endif %}
-        
-        <div id="uppy" class="uk-margin">
-            {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: userId } %}
-        </div>
-
+        <div id="uppy" class="uk-margin"></div>
         {# BELOW #}
         {% if text_position == 'below' %}
-            <div class="uk-card uk-card-default uk-card-body uk-margin">
-                <h3 class="uk-margin-small">{{ form.title }}</h3>
-                {% if form.description %}
-                    <p class="uk-text-meta">{{ form.description|raw }}</p>
-                {% endif %}
-            </div>
+            <h3 class="uk-margin-small">{{ form.title }}</h3>
+            {% if form.description %}
+                <p class="uk-text-meta">{{ form.description|raw }}</p>
+            {% endif %}
         {% endif %}
+    </div>
+    
+    {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: userId } %}
+
 {% endif %}
