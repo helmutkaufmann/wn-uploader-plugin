@@ -38,25 +38,67 @@ class CombinedUploadMigration_010100 extends Migration
                 $table->timestamps();
             });
         } else {
+            // Unlike Schema::create above, an ALTER TABLE ADD COLUMN fails outright if the
+            // column already exists — so unlike every migration written since, this one must
+            // guard each column individually rather than assume a clean slate. Without these
+            // guards, an environment where this table predates this migration's history record
+            // (the table already had all these columns, but system_plugin_history had no entry
+            // for this migration) would fail immediately on the very first column.
             Schema::table('mercator_uploader_forms', function ($table) {
-                $table->string('form_id', 16)->unique();
-                $table->string('title');
-                $table->text('description')->nullable();
-                $table->string('upload_dir')->default('uploader');
-                $table->string('allowed_types')->default('jpg,png,pdf');
-                $table->dateTime('start_date')->default('2025-01-01 00:00:00');
-                $table->dateTime('end_date')->default('2099-12-31 23:59:59');
-                $table->string('timezone')->default('UTC');
-                $table->boolean('client_resize_enabled')->default(false);
-                $table->integer('client_resize_max_width')->nullable();
-                $table->integer('client_resize_max_height')->nullable();
-                $table->decimal('client_resize_quality', 3, 2)->nullable();
-                $table->boolean('auto_upload_enabled')->default(true);
-                $table->boolean('preserve_exif')->default(false);
-                $table->integer('max_file_size')->nullable();
-                $table->integer('max_total_file_size')->nullable();
-                $table->boolean('use_image_editor')->default(true);
-                $table->boolean('restricted')->default(false);
+                if (!Schema::hasColumn('mercator_uploader_forms', 'form_id')) {
+                    $table->string('form_id', 16)->unique();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'title')) {
+                    $table->string('title');
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'description')) {
+                    $table->text('description')->nullable();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'upload_dir')) {
+                    $table->string('upload_dir')->default('uploader');
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'allowed_types')) {
+                    $table->string('allowed_types')->default('jpg,png,pdf');
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'start_date')) {
+                    $table->dateTime('start_date')->default('2025-01-01 00:00:00');
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'end_date')) {
+                    $table->dateTime('end_date')->default('2099-12-31 23:59:59');
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'timezone')) {
+                    $table->string('timezone')->default('UTC');
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'client_resize_enabled')) {
+                    $table->boolean('client_resize_enabled')->default(false);
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'client_resize_max_width')) {
+                    $table->integer('client_resize_max_width')->nullable();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'client_resize_max_height')) {
+                    $table->integer('client_resize_max_height')->nullable();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'client_resize_quality')) {
+                    $table->decimal('client_resize_quality', 3, 2)->nullable();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'auto_upload_enabled')) {
+                    $table->boolean('auto_upload_enabled')->default(true);
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'preserve_exif')) {
+                    $table->boolean('preserve_exif')->default(false);
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'max_file_size')) {
+                    $table->integer('max_file_size')->nullable();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'max_total_file_size')) {
+                    $table->integer('max_total_file_size')->nullable();
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'use_image_editor')) {
+                    $table->boolean('use_image_editor')->default(true);
+                }
+                if (!Schema::hasColumn('mercator_uploader_forms', 'restricted')) {
+                    $table->boolean('restricted')->default(false);
+                }
             });
         }
 
