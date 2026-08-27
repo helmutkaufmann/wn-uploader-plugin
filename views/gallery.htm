@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>{{ uploaderForm(id).title }} — Gallery</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+
+    <body class="uk-container uk-margin">
+        {# UIKit #}
+        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/js/uikit.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.24.1/dist/css/uikit.min.css" />
+
+        {% set form = uploaderForm(id) %}
+        <div class="uk-card uk-card-default uk-card-body uk-margin">
+            <div class="uk-card-title">{{ form.title }}</div>
+            {% if form.description %}
+            <p>{{ form.description|raw }}</p>
+            {% endif %}
+
+            {% include 'mercator.uploader::galleryGrid' with { formID: id, userID: user } %}
+        </div>
+
+        <p><a href="{{ url('/mercator/uploader/slideshow/' ~ id ~ '/' ~ (user ?: 'NONE')) }}">Open live slideshow &rarr;</a></p>
+    </body>
+</html>

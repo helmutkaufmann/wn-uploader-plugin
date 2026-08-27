@@ -1,0 +1,10 @@
+# ===================================
+#  UploadCategory list columns
+# ===================================
+columns:
+  sort_order:
+    label: Order
+    sortable: true
+  name:
+    label: Name
+    searchable: true

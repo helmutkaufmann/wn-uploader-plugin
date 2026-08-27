@@ -1,5 +1,16 @@
-{# Partial to be called with formID and optionally userID #} {# Get the Upload Form from the formID#} {% set form =
-uploaderForm(formID) %} {# Uppy script and style #}
+{# Partial to be called with formID and optionally userID, and optionally allowedCategories (a
+   list restricting the form's full category_list to a subset — e.g. so a page embedding this
+   uploader only offers a couple of sub-categories instead of every one the form defines).
+   Pass allowedCategories: null (or omit it) to allow every category the form defines.
+   Pass categoryPromptText to override the "Where was this taken?" prompt shown above the
+   category balloons. #}
+{% set form = uploaderForm(formID) %}
+{% set allowedCategories = allowedCategories|default(null) %}
+{% set categoryPromptText = categoryPromptText|default('Where was this taken?') %}
+{% set effectiveCategories = allowedCategories is not empty
+    ? form.category_list|filter(cat => cat in allowedCategories)
+    : form.category_list %}
+{# Uppy script and style #}
 <link rel="stylesheet" href="/plugins/mercator/uploader/assets/uppy.min.css" />
 <script src="/plugins/mercator/uploader/assets/uppy.min.js"></script>
 
@@ -12,9 +23,35 @@ uploaderForm(formID) %} {# Uppy script and style #}
     }
 </style>
 
-<div id="uppy-{{ formID }}"></div>
+{% if effectiveCategories|length > 1 %}
+<div class="uppy-category-picker" style="margin: 0 0 14px;">
+    <div style="font-size:.9rem; margin-bottom:8px; color:#333;">{{ categoryPromptText }} <span style="color:#c0392b;">*</span></div>
+    <div class="uppy-category-balloons" id="uppy-category-balloons-{{ formID }}">
+        {% for cat in effectiveCategories %}
+            <button type="button" class="uppy-category-balloon" data-category="{{ cat }}">{{ cat }}</button>
+        {% endfor %}
+    </div>
+</div>
+<style>
+.uppy-category-balloons { display:flex; flex-wrap:wrap; gap:8px; }
+.uppy-category-balloon {
+    border:1px solid #ccc; background:#fff; border-radius:999px; padding:9px 18px;
+    font-size:.9rem; cursor:pointer; transition: transform .1s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+.uppy-category-balloon:hover { border-color:#999; transform: translateY(-1px); }
+.uppy-category-balloon.is-selected { background:#222; border-color:#222; color:#fff; }
+</style>
+<div class="uppy-category-required-notice" id="uppy-category-notice-{{ formID }}" style="margin:0 0 14px; padding:12px 16px; background:#f7f7f7; border:1px dashed #ccc; border-radius:6px; color:#666; font-size:.9rem;">
+    Select where this was taken above to start uploading.
+</div>
+{% endif %}
+<div id="uppy-{{ formID }}" style="{{ effectiveCategories|length > 1 ? 'display:none;' : '' }}"></div>
 
 <script>
+(function () {
+    // Scoped in an IIFE so this partial can be included more than once on the same page
+    // (e.g. multiple upload blocks) without its top-level const/let declarations colliding
+    // across <script> tags, which share the same global scope.
 
     /**
      * Dynamically loads a script from a URL, ensuring it is only fetched and executed once.
@@ -63,6 +100,30 @@ uploaderForm(formID) %} {# Uppy script and style #}
         if (maxFileSize !== null) notes.push('Max per file: {{ form.max_file_size }} MB');
         if (maxTotalFileSize !== null) notes.push('Total: {{ form.max_total_file_size }} MB');
 
+        const categoryBalloons = Array.from(
+            document.querySelectorAll('#uppy-category-balloons-' + formId + ' .uppy-category-balloon')
+        );
+        // Exactly one available category (after any allowedCategories restriction): skip the
+        // picker entirely and tag every upload with it directly.
+        const effectiveCategories = {{ effectiveCategories|json_encode|raw }};
+        let selectedCategory = effectiveCategories.length === 1 ? effectiveCategories[0] : null;
+
+        const uppyContainer = document.getElementById('uppy-' + formId);
+        const categoryNotice = document.getElementById('uppy-category-notice-' + formId);
+        const revealUploader = () => {
+            if (uppyContainer) uppyContainer.style.display = '';
+            if (categoryNotice) categoryNotice.style.display = 'none';
+        };
+
+        categoryBalloons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                categoryBalloons.forEach((b) => b.classList.remove('is-selected'));
+                btn.classList.add('is-selected');
+                selectedCategory = btn.dataset.category;
+                revealUploader();
+            });
+        });
+
         const uppy = new Uppy.Uppy({
             autoProceed: {{ form.auto_upload_enabled ? 'true' : 'false' }},
             allowMultipleUploadBatches: true,
@@ -71,6 +132,13 @@ uploaderForm(formID) %} {# Uppy script and style #}
                 allowedFileTypes: allowedTypes,
                 maxFileSize: (maxFileSize === null) ? null : maxFileSize,
                 maxTotalFileSize: (maxTotalFileSize === null) ? null : maxTotalFileSize,
+            },
+            onBeforeFileAdded: (currentFile, files) => {
+                if (categoryBalloons.length && !selectedCategory) {
+                    uppy.info('Please select where this was taken before uploading.', 'error', 4000);
+                    return false;
+                }
+                return true;
             }
         })
         .use(Uppy.Dashboard, {
@@ -98,6 +166,12 @@ uploaderForm(formID) %} {# Uppy script and style #}
             endpoint: endpoint,
             fieldName: 'file',
             formData: true,
+            allowedMetaFields: ['category'],
+        })
+        .on('file-added', (file) => {
+            if (selectedCategory) {
+                uppy.setFileMeta(file.id, { category: selectedCategory });
+            }
         })
         .on('upload-error', (file, error, response) => {
             uppy.info(error.message, 'error', 5000);
@@ -161,4 +235,5 @@ uploaderForm(formID) %} {# Uppy script and style #}
             });
         {% endif %}
     });
+})();
 </script>

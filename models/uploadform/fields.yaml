@@ -14,6 +14,12 @@ fields:
     span: right
     readOnly: true
 
+  owner_token:
+    label: Owner / moderation link
+    type: partial
+    path: $/mercator/uploader/models/uploadform/_owner_link.htm
+    span: full
+
   description:
     label: Description
     type: textarea
@@ -171,4 +177,30 @@ tabs:
         action: hide
         field: restricted
         condition: unchecked
-        recordsPerPage: 20
+
+    categories@update:
+      label: Categories
+      type: relationmanager
+      tab: Categories
+      span: full
+      comment: "Sub-gallery categories, e.g. Morning, Lunch, Church. If any are defined, uploaders tag their upload with one, and the gallery can be filtered by it."
+
+    qr_card_layout:
+      label: Card Style
+      type: balloon-selector
+      tab: QR Card
+      span: full
+      default: classic
+      options:
+        classic: Classic
+        framed: Framed
+        elegant: Elegant
+        poster: Poster
+      comment: Pick a look, then Save to remember it for this form. The preview and Print button below always use whichever style is currently selected here, saved or not.
+
+    qr_card:
+      label: QR Card
+      type: partial
+      path: $/mercator/uploader/models/uploadform/_qr_card.htm
+      tab: QR Card
+      span: full

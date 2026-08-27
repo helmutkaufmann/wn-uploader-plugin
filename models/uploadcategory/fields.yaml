@@ -1,0 +1,15 @@
+# ===================================
+#  UploadCategory Form Fields
+# ===================================
+fields:
+    name:
+        label: Name
+        type: text
+        span: left
+        comment: "Shown to uploaders as a balloon to tag their upload with, e.g. \"Ceremony\"."
+    sort_order:
+        label: Order
+        type: number
+        span: right
+        default: 0
+        comment: Lower numbers are shown first.

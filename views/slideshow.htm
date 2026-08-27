@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>{{ uploaderForm(id).title }} — Live Slideshow</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>html, body { margin:0; padding:0; background:#000; height:100%; }</style>
+    </head>
+    <body>
+        {% include 'mercator.uploader::slideshowStage' with { formID: id, userID: user } %}
+    </body>
+</html>

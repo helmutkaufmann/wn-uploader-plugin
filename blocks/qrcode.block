@@ -61,7 +61,7 @@ fields:
                 <img src="{{ QRCode }}" width="300" height="300" alt="{{ form.title }} QR Code" />
             </a>
         </div>
-        
+
         {# BELOW #}
         {% if text_position == 'below' %}
             <h3 class="uk-margin-small">{{ form.title }}</h3>

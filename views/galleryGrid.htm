@@ -1,0 +1,344 @@
+{# Partial to be called with formID and optionally userID. Renders the uploaded-files grid,
+   with a "sub-gallery" category filter (e.g. Morning / Lunch / Church) when the form defines any.
+   Pass ownerMode: true and ownerToken to also render selection checkboxes plus a bulk
+   delete/re-categorize menu above and below the grid (moderation view).
+   Pass allowedCategories (a list, or null/omitted for no restriction) to scope this instance of
+   the gallery down to a subset of the form's sub-galleries — both which tabs are offered and
+   which files are included at all (a file with no category is excluded once restricted, since
+   it doesn't belong to any of the selected sub-galleries). #}
+{% set __form = uploaderForm(formID) %}
+{% set __allowedCategories = allowedCategories|default(null) %}
+{% set __categories = __form
+    ? (__allowedCategories is not empty ? __form.category_list|filter(cat => cat in __allowedCategories) : __form.category_list)
+    : [] %}
+{% set __files = __allowedCategories is not empty
+    ? uploaderFiles(formID)|filter(f => f.category and f.category in __allowedCategories)
+    : uploaderFiles(formID) %}
+{% set __ownerMode = ownerMode is defined and ownerMode %}
+
+<div class="uploader-gallery" id="uploader-gallery-{{ formID }}">
+    <div class="uploader-gallery-toolbar">
+        <span class="uploader-gallery-count">{{ __files|length }} file{{ __files|length == 1 ? '' : 's' }}</span>
+        {% if __files|length > 0 %}
+        <a class="uploader-gallery-download" href="{{ uploaderDownloadUrl(formID, userID) }}">Download all (.zip)</a>
+        {% endif %}
+    </div>
+
+    {# Outside ownerMode there's no sidebar to pin the tabs to, so they stay a plain row above
+       the grid. In ownerMode they move into the sticky sidebar alongside the bulk actions, so
+       both scroll (or rather don't) together. #}
+    {% if __categories|length and not (__ownerMode and __files|length > 0) %}
+    <div class="uploader-gallery-tabs">
+        <button type="button" class="uploader-gallery-tab is-active" data-category="">All</button>
+        {% for cat in __categories %}
+            <button type="button" class="uploader-gallery-tab" data-category="{{ cat }}">{{ cat }}</button>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="uploader-gallery-body">
+        {% if __ownerMode and __files|length > 0 %}
+            <div class="uploader-gallery-sidebar">
+                {% if __categories|length %}
+                <div class="uploader-gallery-sidebar-section">
+                    <div class="uploader-gallery-sidebar-heading">Sub-gallery</div>
+                    <div class="uploader-gallery-tabs uploader-gallery-tabs-side uploader-gallery-bulkbar">
+                        <button type="button" class="uploader-gallery-tab is-active" data-category="">All</button>
+                        {% for cat in __categories %}
+                            <button type="button" class="uploader-gallery-tab" data-category="{{ cat }}">{{ cat }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="uploader-gallery-sidebar-section">
+                    <div class="uploader-gallery-sidebar-heading">Selection</div>
+                    {% include 'mercator.uploader::_galleryBulkBar' with { categories: __categories, position: 'side' } %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="uploader-gallery-main">
+            {% if __files|length == 0 %}
+                <p class="uploader-gallery-empty">No uploads yet.</p>
+            {% else %}
+                <div class="uploader-gallery-grid">
+                    {% for f in __files %}
+                        <div class="uploader-gallery-item" data-category="{{ f.category }}" data-file="{{ f.file_token }}">
+                            {% if __ownerMode %}
+                                {# Moderators use the checkbox, not the image itself — clicking the
+                                   thumbnail here shouldn't navigate/open the full image, so it's a
+                                   plain, non-interactive wrapper instead of a link. #}
+                                <span class="uploader-gallery-thumb">
+                                    <img src="{{ uploaderThumbUrl(formID, f.file_token, userID) }}" loading="lazy" alt="">
+                                    {% if f.isVideo() %}<span class="uploader-gallery-badge">&#9654;</span>{% endif %}
+                                    {% if f.category %}<span class="uploader-gallery-tag">{{ f.category }}</span>{% endif %}
+                                </span>
+                            {% else %}
+                                <a href="{{ uploaderMediaUrl(formID, f.file_token, userID) }}" target="_blank" rel="noopener">
+                                    <img src="{{ uploaderThumbUrl(formID, f.file_token, userID) }}" loading="lazy" alt="">
+                                    {% if f.isVideo() %}<span class="uploader-gallery-badge">&#9654;</span>{% endif %}
+                                    {% if f.category %}<span class="uploader-gallery-tag">{{ f.category }}</span>{% endif %}
+                                </a>
+                            {% endif %}
+                            {% if __ownerMode %}
+                            <label class="uploader-gallery-select">
+                                <input
+                                    type="checkbox"
+                                    data-file="{{ f.file_token }}"
+                                    data-delete-url="{{ uploaderModerateDeleteUrl(formID, ownerToken, f.file_token) }}"
+                                    data-category-url="{{ uploaderModerateCategoryUrl(formID, ownerToken, f.file_token) }}"
+                                >
+                            </label>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.uploader-gallery-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:.9rem; color:#555; }
+.uploader-gallery-download { text-decoration:none; padding:6px 12px; border:1px solid #222; border-radius:6px; color:#222; }
+.uploader-gallery-download:hover { background:#222; color:#fff; }
+.uploader-gallery-empty { color:#888; }
+.uploader-gallery-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.uploader-gallery-tab { border:1px solid #ccc; background:#fff; border-radius:16px; padding:5px 12px; font-size:.85rem; cursor:pointer; }
+.uploader-gallery-tab.is-active { background:#222; border-color:#222; color:#fff; }
+.uploader-gallery-body { display:flex; align-items:flex-start; gap:16px; }
+.uploader-gallery-main { flex:1 1 auto; min-width:0; }
+.uploader-gallery-sidebar {
+    flex:0 0 180px; position:sticky; top:16px; align-self:flex-start;
+    max-height:calc(100vh - 32px); overflow-y:auto;
+}
+.uploader-gallery-tabs-side .uploader-gallery-tab {
+    width:100%; text-align:left; border-radius:999px; padding:7px 14px; font-size:.85rem;
+    transition: transform .1s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+.uploader-gallery-tabs-side .uploader-gallery-tab:hover:not(.is-active) { border-color:#2d6cdf; color:#2d6cdf; transform: translateY(-1px); }
+.uploader-gallery-sidebar-heading {
+    font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    color:#999; margin-bottom:8px;
+}
+.uploader-gallery-sidebar-section + .uploader-gallery-sidebar-section {
+    margin-top:16px; padding-top:16px; border-top:1px solid #e3e3e3;
+}
+.uploader-gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; }
+.uploader-gallery-item { position:relative; aspect-ratio:1/1; overflow:hidden; border-radius:8px; background:#f0f0f0; outline:2px solid transparent; outline-offset:-2px; transition: outline-color .15s ease; }
+.uploader-gallery-item.is-selected { outline-color:#2d6cdf; }
+.uploader-gallery-item a, .uploader-gallery-item .uploader-gallery-thumb { display:block; width:100%; height:100%; }
+.uploader-gallery-item img { width:100%; height:100%; object-fit:cover; display:block; }
+.uploader-gallery-badge { position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,.6); color:#fff; font-size:.75rem; padding:2px 6px; border-radius:10px; }
+.uploader-gallery-tag { position:absolute; top:6px; left:6px; background:rgba(0,0,0,.6); color:#fff; font-size:.7rem; padding:2px 7px; border-radius:10px; }
+.uploader-gallery-select {
+    position:absolute; bottom:6px; right:6px; width:24px; height:24px; border-radius:6px;
+    background:rgba(255,255,255,.9); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.3); cursor:pointer;
+}
+.uploader-gallery-select input { width:16px; height:16px; margin:0; cursor:pointer; }
+
+.uploader-gallery-bulkbar {
+    display:flex; flex-direction:column; align-items:stretch; gap:8px;
+    padding:10px 12px; border:1px solid #e3e3e3; border-radius:8px; background:#fafafa;
+}
+.uploader-gallery-bulkbar button { width:100%; }
+.uploader-gallery-bulk-count { font-size:.85rem; color:#555; font-weight:600; }
+
+@media (max-width: 640px) {
+    /* Not enough width for a side column — stack the bulk bar above the grid instead, and let
+       it scroll with the page rather than pin itself over content on a small screen. */
+    .uploader-gallery-body { flex-direction:column; }
+    .uploader-gallery-sidebar { position:static; flex-basis:auto; width:100%; max-height:none; }
+    .uploader-gallery-bulkbar { flex-direction:row; flex-wrap:wrap; }
+    .uploader-gallery-bulkbar button { width:auto; }
+    .uploader-gallery-tabs-side { flex-direction:row; flex-wrap:wrap; }
+    .uploader-gallery-tabs-side .uploader-gallery-tab { width:auto; text-align:center; }
+}
+.uploader-gallery-move-balloon, .uploader-gallery-bulk-delete, .uploader-gallery-bulk-clear, .uploader-gallery-bulk-selectall {
+    border:1px solid #ccc; background:#fff; border-radius:999px; padding:7px 14px; font-size:.85rem; cursor:pointer;
+    transition: transform .1s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+.uploader-gallery-move-balloon:hover:not(:disabled) { border-color:#2d6cdf; color:#2d6cdf; transform: translateY(-1px); }
+.uploader-gallery-bulk-delete { border-color:#e0b4b4; color:#c0392b; }
+.uploader-gallery-bulk-delete:hover:not(:disabled) { background:#c0392b; border-color:#c0392b; color:#fff; }
+.uploader-gallery-bulk-clear { color:#666; }
+.uploader-gallery-bulk-selectall:hover { border-color:#2d6cdf; color:#2d6cdf; transform: translateY(-1px); }
+.uploader-gallery-move-balloon:disabled, .uploader-gallery-bulk-delete:disabled, .uploader-gallery-bulk-clear:disabled {
+    opacity:.4; cursor:not-allowed;
+}
+</style>
+
+<script>
+(function () {
+    var root = document.getElementById('uploader-gallery-{{ formID }}');
+    if (!root) return;
+
+    var tabs = root.querySelectorAll('.uploader-gallery-tab');
+    var items = root.querySelectorAll('.uploader-gallery-item');
+
+    function getActiveCategory() {
+        var activeTab = root.querySelector('.uploader-gallery-tab.is-active');
+        return activeTab ? activeTab.dataset.category : '';
+    }
+
+    // Shows/hides a single item against whichever tab is currently active, deselecting it if it
+    // just became hidden. Used both when switching tabs and after a move changes an item's
+    // category out from under the active filter (e.g. moving a Ceremony photo to Reception while
+    // viewing the Ceremony tab should make it disappear from view, not just from the selection).
+    function applyActiveFilter(item) {
+        var cat = getActiveCategory();
+        var visible = !cat || item.dataset.category === cat;
+        item.style.display = visible ? '' : 'none';
+        if (!visible) {
+            var cb = item.querySelector('.uploader-gallery-select input[type="checkbox"]');
+            if (cb && cb.checked) {
+                cb.checked = false;
+                item.classList.remove('is-selected');
+            }
+        }
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            tabs.forEach(function (t) { t.classList.remove('is-active'); });
+            tab.classList.add('is-active');
+            items.forEach(applyActiveFilter);
+            // Only relevant in ownerMode (moderation view), where checkboxes/bulk bars exist at
+            // all — refreshBars() below reads `bars`, which is never assigned otherwise.
+            if (root.querySelectorAll('.uploader-gallery-select input[type="checkbox"]').length) {
+                refreshBars();
+            }
+        });
+    });
+
+    var checkboxes = root.querySelectorAll('.uploader-gallery-select input[type="checkbox"]');
+    if (!checkboxes.length) return;
+
+    var bars = root.querySelectorAll('.uploader-gallery-bulkbar');
+
+    function getSelected() {
+        return Array.from(checkboxes).filter(function (c) { return c.checked; });
+    }
+
+    function refreshBars() {
+        var count = getSelected().length;
+        bars.forEach(function (bar) {
+            var countEl = bar.querySelector('.uploader-gallery-bulk-count');
+            if (countEl) countEl.textContent = count + ' selected';
+            bar.querySelectorAll('button').forEach(function (btn) {
+                // "Select all" always stays clickable — it doesn't need an existing selection,
+                // it creates one.
+                if (btn.classList.contains('uploader-gallery-bulk-selectall')) return;
+                btn.disabled = count === 0;
+            });
+        });
+    }
+
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            var item = cb.closest('.uploader-gallery-item');
+            if (item) item.classList.toggle('is-selected', cb.checked);
+            refreshBars();
+        });
+    });
+
+    bars.forEach(function (bar) {
+        var selectAllBtn = bar.querySelector('.uploader-gallery-bulk-selectall');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function () {
+                checkboxes.forEach(function (cb) {
+                    var item = cb.closest('.uploader-gallery-item');
+                    // Only select items visible under the current sub-gallery tab filter.
+                    if (item && item.style.display === 'none') return;
+                    cb.checked = true;
+                    if (item) item.classList.add('is-selected');
+                });
+                refreshBars();
+            });
+        }
+
+        var clearBtn = bar.querySelector('.uploader-gallery-bulk-clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                checkboxes.forEach(function (cb) {
+                    cb.checked = false;
+                    var item = cb.closest('.uploader-gallery-item');
+                    if (item) item.classList.remove('is-selected');
+                });
+                refreshBars();
+            });
+        }
+
+        var deleteBtn = bar.querySelector('.uploader-gallery-bulk-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function () {
+                var sel = getSelected();
+                if (!sel.length) return;
+                if (!confirm('Delete ' + sel.length + ' file(s)? This cannot be undone.')) return;
+                Promise.all(sel.map(function (cb) {
+                    return fetch(cb.dataset.deleteUrl, { method: 'DELETE' }).then(function (r) { return r.json(); });
+                })).then(function (results) {
+                    sel.forEach(function (cb, i) {
+                        if (results[i] && results[i].success) {
+                            var item = cb.closest('.uploader-gallery-item');
+                            if (item) item.remove();
+                        }
+                    });
+                    var countEl = root.querySelector('.uploader-gallery-count');
+                    if (countEl) {
+                        var remaining = root.querySelectorAll('.uploader-gallery-item').length;
+                        countEl.textContent = remaining + ' file' + (remaining === 1 ? '' : 's');
+                    }
+                    refreshBars();
+                });
+            });
+        }
+
+        bar.querySelectorAll('.uploader-gallery-move-balloon').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var sel = getSelected();
+                if (!sel.length) return;
+                var newCat = btn.dataset.category || '';
+                Promise.all(sel.map(function (cb) {
+                    return fetch(cb.dataset.categoryUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'category=' + encodeURIComponent(newCat)
+                    }).then(function (r) { return r.json(); });
+                })).then(function (results) {
+                    sel.forEach(function (cb, i) {
+                        if (!results[i] || !results[i].success) return;
+                        var item = cb.closest('.uploader-gallery-item');
+                        if (!item) return;
+                        item.dataset.category = newCat;
+                        // The bulk bar (and this move handler) only exists in ownerMode, where
+                        // the thumbnail wrapper is always a <span class="uploader-gallery-thumb">
+                        // (see galleryGrid.htm markup above) — never an <a>.
+                        var thumb = item.querySelector('.uploader-gallery-thumb');
+                        var tag = item.querySelector('.uploader-gallery-tag');
+                        if (newCat) {
+                            if (!tag) {
+                                tag = document.createElement('span');
+                                tag.className = 'uploader-gallery-tag';
+                                thumb.appendChild(tag);
+                            }
+                            tag.textContent = newCat;
+                        } else if (tag) {
+                            tag.remove();
+                        }
+                        cb.checked = false;
+                        item.classList.remove('is-selected');
+                        // Re-evaluate against the active tab now that the category changed — a
+                        // moved item disappears from view if it no longer matches the filter.
+                        applyActiveFilter(item);
+                    });
+                    refreshBars();
+                });
+            });
+        });
+    });
+
+    refreshBars();
+})();
+</script>

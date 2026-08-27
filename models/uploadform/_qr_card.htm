@@ -1,0 +1,205 @@
+<?php if ($formModel && $formModel->exists && $formModel->form_id): ?>
+    <?php
+        $qrTargetUrl = url('/mercator/uploader/default/' . $formModel->form_id);
+        $qrCodeLarge = \Mercator\Uploader\Models\UploadForm::generateQrDataUri($qrTargetUrl, 900, 4);
+        $qrCardId = 'qrcard-' . $formModel->id;
+    ?>
+    <div class="qrcard-panel">
+        <!-- Live preview — reflects the Card Style balloon-selector above and the text below,
+             without printing anything, so a look can be picked without wasting paper. -->
+        <div class="qrcard-preview-frame">
+            <div class="qrcard-print qrcard-layout-<?= e($formModel->qr_card_layout ?: 'classic') ?>" id="<?= $qrCardId ?>-preview">
+                <div class="qrcard-eyebrow">Scan to upload photos</div>
+                <img src="<?= e($qrCodeLarge) ?>" alt="<?= e($formModel->title) ?> QR Code" class="qrcard-print-qr">
+                <hr class="qrcard-rule">
+                <div class="qrcard-print-text" id="<?= $qrCardId ?>-preview-text"></div>
+            </div>
+        </div>
+
+        <textarea
+            id="<?= $qrCardId ?>-text"
+            class="form-control"
+            rows="2"
+            placeholder="Text to print on the card (e.g. a table name or welcome message)"
+        ></textarea>
+
+        <button type="button" class="btn btn-primary" id="<?= $qrCardId ?>-produce" style="margin-top: 8px;">
+            Print QR Card
+        </button>
+
+        <p class="help-block" style="margin-top: 6px;">
+            Pick a style above, type a line of text (optional), then Print — a full page combining it
+            with a large QR code opens in the browser's print dialog. Hand it out at the door.
+        </p>
+    </div>
+
+    <!-- Full-page printable card: hidden on screen, shown (and only this) when printing. Starts
+         as a copy of the preview and gets moved to <body> + re-styled at print time (see script). -->
+    <div class="qrcard-print qrcard-print-only qrcard-layout-<?= e($formModel->qr_card_layout ?: 'classic') ?>" id="<?= $qrCardId ?>-print">
+        <div class="qrcard-eyebrow">Scan to upload photos</div>
+        <img src="<?= e($qrCodeLarge) ?>" alt="<?= e($formModel->title) ?> QR Code" class="qrcard-print-qr">
+        <hr class="qrcard-rule">
+        <div class="qrcard-print-text" id="<?= $qrCardId ?>-print-text"></div>
+    </div>
+
+    <style>
+        .qrcard-panel { max-width: 320px; }
+
+        /* --- Shared shape (screen preview: a fixed small card; print: filled to the page — see
+           the @media print block below, which overrides sizing but not colors/typography). --- */
+        .qrcard-print {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        /* The print-only clone must never show up in normal page flow — only @media print below
+           forces it visible. Without this, un-hiding it via JS (as an earlier version did)
+           leaves an unconstrained, full-size div sitting on top of the actual admin page. */
+        .qrcard-print-only { display: none; }
+        .qrcard-preview-frame { margin-bottom: 14px; }
+        .qrcard-preview-frame .qrcard-print {
+            width: 220px;
+            height: 320px;
+            padding: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .qrcard-print-qr { width: 60%; height: auto; }
+        .qrcard-print-text { white-space: pre-wrap; word-break: break-word; max-width: 100%; }
+        /* Elegant-only decoration; every other layout keeps these hidden. */
+        .qrcard-eyebrow, .qrcard-rule { display: none; }
+        .qrcard-preview-frame .qrcard-print-qr { margin-bottom: 12px; }
+        .qrcard-preview-frame .qrcard-print-text { font-size: .95rem; }
+
+        /* --- Classic: plain white, bold sans-serif — the original, safe-default look. --- */
+        .qrcard-layout-classic { background: #fff; color: #111; }
+        .qrcard-layout-classic .qrcard-print-text { font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+        /* --- Framed: rounded color border around a white inner panel, ticket/boarding-pass feel. --- */
+        .qrcard-layout-framed {
+            background: #2d6cdf;
+            padding: 14px;
+        }
+        .qrcard-layout-framed .qrcard-print-qr,
+        .qrcard-layout-framed .qrcard-print-text {
+            background: #fff;
+        }
+        .qrcard-preview-frame .qrcard-layout-framed { padding: 14px; }
+        .qrcard-layout-framed .qrcard-print-qr {
+            padding: 12px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        .qrcard-layout-framed .qrcard-print-text {
+            color: #2d6cdf;
+            font-weight: 700;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            border-radius: 999px;
+            padding: 6px 16px;
+            margin-top: 10px;
+        }
+
+        /* --- Elegant: serif type, generous whitespace, thin rule, monochrome. --- */
+        .qrcard-layout-elegant { background: #fff; color: #1a1a1a; }
+        .qrcard-layout-elegant .qrcard-print-qr { margin-bottom: 18px; }
+        .qrcard-layout-elegant .qrcard-eyebrow {
+            display: block;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: .7em;
+            letter-spacing: .25em;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .qrcard-layout-elegant .qrcard-rule {
+            display: block;
+            width: 40px;
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 14px 0;
+        }
+        .qrcard-layout-elegant .qrcard-print-text {
+            font-family: Georgia, "Times New Roman", serif;
+            font-style: italic;
+        }
+
+        /* --- Poster: dark full-bleed background, floating white QR card with shadow, bold type. --- */
+        .qrcard-layout-poster { background: #1b1f2a; color: #fff; }
+        .qrcard-layout-poster .qrcard-print-qr {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.35);
+        }
+        .qrcard-layout-poster .qrcard-print-text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-weight: 800;
+            letter-spacing: .01em;
+        }
+
+        @media print {
+            body > *:not(.qrcard-print-only) { display: none !important; }
+            .qrcard-print-only {
+                display: flex !important;
+                width: 100%;
+                height: 100vh;
+                min-height: 100vh;
+                padding: 6vh 6vw;
+                border-radius: 0;
+            }
+            .qrcard-print-qr { width: min(65vw, 60vh); margin-bottom: 4vh !important; }
+            .qrcard-print-text { font-size: 6vh; padding: 0 !important; max-width: 90vw; }
+            .qrcard-layout-elegant .qrcard-eyebrow { font-size: 2.2vh; margin-bottom: 3vh; }
+            .qrcard-layout-elegant .qrcard-rule { width: 8vw; margin: 4vh 0; }
+        }
+    </style>
+
+    <script>
+        (function () {
+            var layoutInput = document.querySelector('input[name="UploadForm[qr_card_layout]"]');
+            var previewEl = document.getElementById('<?= $qrCardId ?>-preview');
+            var printEl = document.getElementById('<?= $qrCardId ?>-print');
+            var textEl = document.getElementById('<?= $qrCardId ?>-text');
+            var previewTextEl = document.getElementById('<?= $qrCardId ?>-preview-text');
+            var printTextEl = document.getElementById('<?= $qrCardId ?>-print-text');
+
+            function applyLayoutClass(el, layout) {
+                el.className = el.className.replace(/\bqrcard-layout-\S+/g, '').trim();
+                el.classList.add('qrcard-layout-' + layout);
+            }
+
+            function currentLayout() {
+                return (layoutInput && layoutInput.value) || 'classic';
+            }
+
+            function syncPreview() {
+                var layout = currentLayout();
+                applyLayoutClass(previewEl, layout);
+                previewTextEl.textContent = textEl.value;
+            }
+
+            if (layoutInput) {
+                layoutInput.addEventListener('change', syncPreview);
+            }
+            textEl.addEventListener('input', syncPreview);
+            syncPreview();
+
+            document.getElementById('<?= $qrCardId ?>-produce').addEventListener('click', function () {
+                applyLayoutClass(printEl, currentLayout());
+                printTextEl.textContent = textEl.value;
+                // Move it out of the backend admin's nested layout (which likely has a
+                // transformed ancestor somewhere for sidebar/panel animations — that hijacks
+                // what `position: fixed` measures against, and was making an earlier version of
+                // this card render tiny and off in a corner instead of centered full-page). As a
+                // direct child of <body>, none of that ambiguity exists.
+                document.body.appendChild(printEl);
+                window.print();
+            });
+        })();
+    </script>
+<?php else: ?>
+    <p class="help-block">Save the form once to generate its QR card.</p>
+<?php endif; ?>

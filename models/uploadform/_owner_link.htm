@@ -1,0 +1,20 @@
+<?php if ($formModel && $formModel->exists && $formModel->form_id && $formModel->owner_token): ?>
+<?php $moderateUrl = url('/mercator/uploader/moderate/' . $formModel->form_id . '/' . $formModel->owner_token); ?>
+<div style="margin-top: 4px;">
+    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+        <input type="text" value="<?= e($moderateUrl) ?>" readonly id="ownerlink-<?= $formModel->id ?>"
+               style="flex: 1; font-family: monospace; font-size: .82rem; padding: 6px 10px;
+                      border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9; color: #333;">
+        <button type="button" class="btn btn-default btn-sm"
+                onclick="(function(b){
+                    navigator.clipboard && navigator.clipboard.writeText(document.getElementById('ownerlink-<?= $formModel->id ?>').value);
+                    b.textContent = 'Copied!';
+                    setTimeout(function(){ b.textContent = 'Copy'; }, 2000);
+                })(this)">Copy</button>
+        <a href="<?= e($moderateUrl) ?>" target="_blank" class="btn btn-default btn-sm">Open</a>
+    </div>
+    <p class="help-block">Give this link only to the gallery owner (e.g. the couple) so they can review and delete uploads themselves &mdash; no backend account needed.</p>
+</div>
+<?php else: ?>
+    <p class="help-block">Save the form once to generate the moderation link.</p>
+<?php endif; ?>

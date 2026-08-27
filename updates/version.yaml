@@ -2,3 +2,19 @@
     - Consolidated schema for mercator_uploader_forms and mercator_uploader_users.
     - 00_50_00_combined_upload_migrationi.php
 
+00.60.00:
+    - Add mercator_uploader_files table to track uploads (enables gallery/slideshow), plus a categories field on forms for sub-galleries.
+    - 00_60_00_add_uploaded_files_table.php
+
+00.70.00:
+    - Add owner_token to forms, enabling a no-backend-account moderation link to review and delete uploads.
+    - 00_70_00_add_owner_token.php
+
+00.80.00:
+    - Move sub-gallery categories from a comma-separated string to a proper mercator_uploader_categories table, so renaming a category updates every file tagged with it.
+    - 00_80_00_categories_table.php
+
+00.90.00:
+    - Add qr_card_layout to forms, letting each form remember its chosen QR card print style.
+    - 00_90_00_qr_card_layout.php
+

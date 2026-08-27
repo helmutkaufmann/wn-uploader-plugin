@@ -8,6 +8,7 @@ fields:
         label: Upload Form
         type: dropdown
         options: '\Mercator\Uploader\Models\UploadForm::getActiveFormsOptions'
+        placeholder: "— Select a form —"
         span: left
         comment: "Select a default form. This can be overridden by a URL parameter (e.g., ?id=FORM_ID)."
     text_position:
@@ -20,12 +21,28 @@ fields:
             above: Above uploader widget
             below: Below uploader widget
         comment: Defines the position or absence of the title and description (as defind in the backend).
+    restrict_categories:
+        label: Restrict to Sub-Categories
+        type: checkboxlist
+        options: '\Mercator\Uploader\Models\UploadCategory::getScopedCategoryOptions'
+        dependsOn: form_id
+        default: ["all"]
+        span: full
+        comment: "Which of the selected form's categories to offer here. Refreshes when you change Upload Form above. Check \"All\" (the default) to offer every category. If this results in exactly one category, the picker is skipped and uploads go straight to it."
+    category_prompt_text:
+        label: Sub-Category Prompt
+        type: text
+        span: full
+        default: "Where was this taken?"
+        comment: The question shown above the sub-category picker, when more than one category is offered.
 ==
 {# Get Form ID, preferring URL param over block setting #}
 {# prefer the explicit field; otherwise take ?id=XXX from the page URL #}
 {% set __fid = input('id')|default(form_id) %}
 {% set form = __fid ? uploaderForm(__fid) : null %}
 {% set user = input('user')|default("NONE") %}
+{# null __allowedCategories means "no restriction, offer every category" — the default. #}
+{% set __allowedCategories = uploaderRestrictedCategoryNames(__fid, restrict_categories) %}
 {% if uploaderUploaderOpen(__fid, user) != 0 %}
     <div class="uk-alert-danger" uk-alert>
         <p>Upload form not found, user not permissioned or outside upload time window.</p>
@@ -42,7 +59,7 @@ fields:
         {% endif %}
         
         <div id="uppy" class="uk-margin">
-            {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: user } %}
+            {% include 'mercator.uploader::uppyCore' with { formID: __fid, userID: user, allowedCategories: __allowedCategories, categoryPromptText: category_prompt_text } %}
         </div>
 
         {# BELOW #}

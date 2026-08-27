@@ -1,0 +1,33 @@
+name: Uppy - Gallery
+author: Helmut Kaufmann
+description: Displays a gallery of files uploaded to an upload form, with optional sub-gallery (category) filter tabs
+tags: ["pages","upload"]
+
+fields:
+    form_id:
+        label: Upload Form
+        type: dropdown
+        options: '\Mercator\Uploader\Models\UploadForm::getActiveFormsOptions'
+        placeholder: "— Select a form —"
+        span: left
+        comment: "Select a form. This can be overridden by a URL parameter (e.g., ?id=FORM_ID)."
+    restrict_categories:
+        label: Restrict to Sub-Galleries
+        type: checkboxlist
+        options: '\Mercator\Uploader\Models\UploadCategory::getScopedCategoryOptions'
+        dependsOn: form_id
+        default: ["all"]
+        span: full
+        comment: "Which of the selected form's sub-galleries to show here. Refreshes when you change Upload Form above. Check \"All\" (the default) to show every sub-gallery. Files with no category are only shown when \"All\" is checked."
+==
+{% set __fid = input('id')|default(form_id) %}
+{% set __user = input('user')|default('NONE') %}
+{# null __allowedCategories means "no restriction, show every sub-gallery" — the default. #}
+{% set __allowedCategories = uploaderRestrictedCategoryNames(__fid, restrict_categories) %}
+{% if not __fid or not uploaderUserIsPermissioned(__fid, __user) %}
+    <div class="uk-alert-danger" uk-alert>
+        <p>Gallery not found or you are not permissioned to view it.</p>
+    </div>
+{% else %}
+    {% include 'mercator.uploader::galleryGrid' with { formID: __fid, userID: __user, allowedCategories: __allowedCategories } %}
+{% endif %}

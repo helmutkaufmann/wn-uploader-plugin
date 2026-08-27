@@ -9,3 +9,14 @@ users:
     form: $/mercator/uploader/models/uploaduser/fields.yaml
     recordsPerPage: 20
   pivot: false
+
+categories:
+  label: Categories
+  view:
+    list: $/mercator/uploader/models/uploadcategory/columns.yaml
+    toolbarButtons: create|delete
+    showSearch: true
+  manage:
+    form: $/mercator/uploader/models/uploadcategory/fields.yaml
+    recordsPerPage: 20
+  pivot: false

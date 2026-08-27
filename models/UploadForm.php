@@ -3,6 +3,12 @@
 use Model;
 use Winter\Storm\Database\Traits\Validation;
 use Log;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class UploadForm extends Model
 {
@@ -50,6 +56,7 @@ class UploadForm extends Model
         "max_total_file_size",
         "use_image_editor",
         "restricted",
+        "qr_card_layout",
     ];
 
     public $attributes = [
@@ -63,6 +70,7 @@ class UploadForm extends Model
         "max_file_size" => 0,
         "max_total_file_size" => 0,
         "restricted" => false,
+        "qr_card_layout" => "classic",
     ];
 
     public $rules = [
@@ -81,11 +89,30 @@ class UploadForm extends Model
 
     public $hasMany = [
         "users" => [\Mercator\Uploader\Models\UploadUser::class, "delete" => true],
+        "files" => [\Mercator\Uploader\Models\UploadedFile::class, "delete" => true],
+        "categories" => [\Mercator\Uploader\Models\UploadCategory::class, "order" => "sort_order asc", "delete" => true],
     ];
+
+    /**
+     * Returns the form's configured categories (sub-galleries) as a clean list of names, e.g.
+     * ['Morning', 'Lunch', 'Church'], ordered the same way they're managed in the backend.
+     */
+    public function getCategoryListAttribute(): array
+    {
+        if (!$this->exists) {
+            return [];
+        }
+
+        return $this->categories()->orderBy("sort_order")->pluck("name")->all();
+    }
+
     public function beforeCreate()
     {
         if (!$this->form_id) {
             $this->form_id = substr(bin2hex(random_bytes(8)), 0, 12);
+        }
+        if (!$this->owner_token) {
+            $this->owner_token = bin2hex(random_bytes(12));
         }
     }
 
@@ -142,5 +169,27 @@ class UploadForm extends Model
         // [ 'form_id_123' => 'My First Form Title' ]
         return self::orderBy('title')
                    ->lists('title', 'form_id');
+    }
+
+    /**
+     * Renders a QR code for $data as an inline PNG data URI. Shared by the "uploaderQRCode" Twig
+     * function (frontend .blocks) and the backend "Print QR Card" form partial, so both use the
+     * exact same rendering.
+     */
+    public static function generateQrDataUri(string $data, int $size = 300, int $margin = 4): string
+    {
+        $writer = new PngWriter();
+        $qrCode = new QrCode(
+            data: $data,
+            encoding: new Encoding("UTF-8"),
+            errorCorrectionLevel: ErrorCorrectionLevel::Low,
+            size: $size,
+            margin: $margin,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+            foregroundColor: new Color(0, 0, 0),
+            backgroundColor: new Color(255, 255, 255)
+        );
+
+        return $writer->write($qrCode)->getDataUri();
     }
 }

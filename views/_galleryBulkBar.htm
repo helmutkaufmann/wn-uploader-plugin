@@ -1,0 +1,15 @@
+{# Partial called with categories (array) and position ('top'|'bottom'). Renders one instance
+   of the bulk delete/re-categorize menu; galleryGrid.htm includes this once above and once
+   below the grid, and wires both up to the same selection state via JS. #}
+<div class="uploader-gallery-bulkbar" data-position="{{ position }}">
+    <span class="uploader-gallery-bulk-count">0 selected</span>
+    <button type="button" class="uploader-gallery-bulk-selectall">Select all</button>
+    {% for cat in categories %}
+        <button type="button" class="uploader-gallery-move-balloon" data-category="{{ cat }}" disabled>Move to {{ cat }}</button>
+    {% endfor %}
+    {% if categories|length %}
+        <button type="button" class="uploader-gallery-move-balloon" data-category="" disabled>Remove category</button>
+    {% endif %}
+    <button type="button" class="uploader-gallery-bulk-delete" disabled>Delete selected</button>
+    <button type="button" class="uploader-gallery-bulk-clear" disabled>Clear selection</button>
+</div>
