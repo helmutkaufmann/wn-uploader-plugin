@@ -14,6 +14,12 @@ fields:
     span: right
     readOnly: true
 
+  uploader_url_field:
+    label: Uploader URL
+    type: partial
+    path: $/mercator/uploader/models/uploadform/_uploader_link.htm
+    span: full
+
   owner_token:
     label: Owner / moderation link
     type: partial
