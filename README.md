@@ -38,14 +38,14 @@ A comprehensive file upload management system for WinterCMS that empowers admini
    ```
 
 3. **Create an Upload Form** in the WinterCMS backend:
-   - Go to **Uploader → Forms**
+   - Go to **Uploaders** in the backend menu
    - Fill in the form details (title, description, allowed file types, etc.)
-   - Add authorized users (by email, token, or ID)
+   - If needed, add authorized users on the **Users** tab (each gets an auto-generated token)
    - Save and copy the **Form ID**
 
-4. **Add to Frontend** using a component or block:
+4. **Add to Frontend** using the component (for blocks, see [Using Pre-built Blocks](#using-pre-built-blocks)):
    ```twig
-   [Uploader]
+   [uploader]
    formId = "YOUR_FORM_ID"
    
    {% component 'uploader' %}
@@ -80,9 +80,9 @@ The Uploader Plugin follows a **backend-defined, frontend-referenced** architect
 │ Backend (Administrator)                                     │
 ├─────────────────────────────────────────────────────────────┤
 │ • Create Upload Forms                                       │
-│ • Define allowed users (email, token, or ID)                │
-│ • Set file constraints (type, size, count)                  │
-│ • Configure email notifications                             │
+│ • Add authorized users (auto-generated tokens)              │
+│ • Set file constraints (type, size)                         │
+│ • Send invite emails                                        │
 │ • Get Form ID                                               │
 └─────────────────────────────────────────────────────────────┘
                             ↓
@@ -90,7 +90,7 @@ The Uploader Plugin follows a **backend-defined, frontend-referenced** architect
 │ Frontend (Visitors/Users)                                   │
 ├─────────────────────────────────────────────────────────────┤
 │ • Reference Form ID in page/block/component                 │
-│ • Optionally provide User ID for access validation          │
+│ • Optionally provide a user token for access validation     │
 │ • Upload files (validated server-side)                      │
 │ • Files stored in media folder                              │
 └─────────────────────────────────────────────────────────────┘
@@ -104,7 +104,7 @@ The Uploader Plugin follows a **backend-defined, frontend-referenced** architect
 
 ### Creating Upload Forms
 
-1. Navigate to **Uploader** → **Forms** in the WinterCMS backend
+1. Navigate to **Uploaders** in the WinterCMS backend menu
 2. Click **+ New Form**
 3. Fill in the following details:
 
@@ -112,29 +112,36 @@ The Uploader Plugin follows a **backend-defined, frontend-referenced** architect
 
 | Field | Type | Description |
 |-------|------|-------------|
-| **Form ID** | Text | Unique identifier used to reference this form on the frontend. Generated automatically; can be customized. |
-| **Title** | Text | Display name for the form (shown in frontend blocks/components). |
-| **Description** | Textarea | Optional description displayed to users (e.g., instructions or context). |
-| **Allowed File Extensions** | Text | Comma-separated list of extensions (e.g., `jpg,png,pdf,docx`). Leave empty to allow all types. |
-| **Max File Size (MB)** | Number | Maximum file size in megabytes per file. Use `0` for unlimited. |
-| **Max Files per User** | Number | Maximum number of files a user can upload. Use `0` for unlimited. |
-| **Restricted** | Checkbox | If enabled, only users in the "Authorized Users" list can upload. If disabled, anyone can upload (if form ID is public). |
+| **Title** | Text | Display name for the form (shown above the uploader/gallery/slideshow when enabled). |
+| **Form ID** | Text | Read-only, auto-generated identifier used to reference this form on the frontend. |
+| **Description** | Textarea | Optional description displayed alongside the title. |
+| **Upload Directory** | Media Finder | The media-library folder uploaded files are stored in. |
+| **Timezone** | Dropdown | Timezone used to interpret Start/End Date below (default: `Europe/Zurich`). |
+| **Start / End Date and Time** | Datetime | The window during which the upload interface is open. Outside this window, uploads are refused (see `uploaderUploaderOpen` below). |
+| **Auto-upload files immediately** | Switch | If enabled, files upload as soon as they're dropped, skipping the Uppy editor step. |
 
-#### Authorized Users
+Additional settings are grouped into tabs:
 
-If **Restricted** is enabled, specify which users can access this form:
+| Tab | Field | Description |
+|-----|-------|--------------|
+| **Pre-Processing** | Enable Uppy Image Editor | Lets users crop/rotate before upload (disabled automatically if auto-upload is on). |
+| | Preserve EXIF Metadata | Keep EXIF data on uploaded images instead of stripping it. |
+| | Enable client-side resizing and compression | Resize/compress images in the browser before upload. |
+| | Allowed File Types | Comma-separated extensions (default: `jpg,png,jpeg,gif,bmp,tif,tiff,heif,heic,webp,mp4,mov,webm`). |
+| **Resizing & Compression** | Max width / height (px) | Only shown when client-side resizing is enabled. |
+| | JPEG/WebP Quality (0.0–1.0) | Compression quality when resizing is enabled. |
+| **Restrictions** | Restrict access to specific users | When enabled, only users added on the **Users** tab (via their token, passed as `?user=<token>`) may open or upload to this form. |
+| | Maximum File Size (MB) | Per-file limit. `0` or empty = unlimited. |
+| | Maximum Total Upload Size (MB) | Limit across all of a user's uploads to this form. `0` or empty = unlimited. |
+| **Users** | Users | A relation manager for adding authorized users (Name, Email, Active). Each user is issued a random **token** automatically — this token is the value that must be passed as `?user=` on the frontend, not the email or name. |
+| **Categories** | Categories | Optional sub-galleries (e.g. "Morning", "Lunch", "Church"). If any exist, uploaders are prompted to tag their file with one, and the gallery/slideshow blocks can filter by them. |
+| **QR Card** | Card Style + preview | Pick a printable QR card design (Classic/Framed/Elegant/Poster) linking straight to this form's upload page, with a Print button. |
 
-| Method | Example | Use Case |
-|--------|---------|----------|
-| **Email** | `user@example.com` | User identified by email address |
-| **Token** | `abc123xyz456` | Anonymous access via token (useful for surveys/forms) |
-| **User ID** | `42` | WinterCMS backend user ID |
+#### Authorized Users & Invitations
 
-#### Email Notifications (Optional)
+When **Restrict access to specific users** is enabled, add users on the **Users** tab. Each user gets an auto-generated **token** — this is what's checked against the `user` parameter on the frontend (URL query string, route segment, or a component/block's user field), not their name or email.
 
-- **Notify Email Address**: Send upload notifications to this email
-- **Subject Line**: Email subject (variables: `{form_title}`, `{user_name}`)
-- **Message Body**: Email body with upload instructions and link
+To notify a user by email, select them in the Users grid and click **Send Invites**. This sends each selected user (who has an email set) a message containing a personal upload link in the form `/mercator/uploader/default/{form_id}/{their_token}` — there's no separate configurable subject/body template.
 
 ---
 
@@ -149,7 +156,7 @@ The `Uploader` component renders an interactive upload form on any CMS page.
 Add this to your CMS page or layout:
 
 ```ini
-[Uploader]
+[uploader]
 formId = "your_form_id_here"
 userId = "optional_user_id_here"
 ```
@@ -159,7 +166,7 @@ userId = "optional_user_id_here"
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `formId` | String | Yes | The **Form ID** from the backend upload form definition. |
-| `userId` | String | No | Optional user identifier (email, token, or ID). Used to validate access control. |
+| `userId` | String | No | Optional user token (from the form's Users tab). Required only if the form is restricted. |
 
 #### Page Markup
 
@@ -183,164 +190,130 @@ The component renders:
 
 **Access Denied Message:**
 ```
-Upload form not found or user not permissioned.
+Upload form not found or user not authorized.
 ```
+
+> **Note:** `userId` here must be a **token** from the form's Users tab (see [Backend Setup](#backend-setup)), not a WinterCMS site-user ID or email. If the form isn't restricted, leave `userId` empty.
 
 ---
 
 ### Using Pre-built Blocks
 
-The plugin includes ready-made **blocks** for rapid frontend development. Blocks are full-featured, styled components you can add to CMS pages.
+This plugin depends on and registers with **[Winter.Blocks](https://github.com/wintercms/wn-blocks-plugin)** (`winter/wn-blocks-plugin`, installed automatically via Composer). Blocks are **not** CMS components — they are managed through Winter.Blocks' own block editor and rendered with its Twig functions, `renderBlocks()` / `renderBlock()`, not `{% component %}`.
+
+> ⚠️ **Currently active blocks:** only `upload.block` (UIKit), `qrcode.block` (UIKit), `gallery.block`, and `slideshow.block` are registered. The Bootstrap variants (`upload_bootstrap.block`, `qrcode_bootstrap.block`) exist as files but are commented out in `registerBlocks()` in [`Plugin.php`](Plugin.php) — uncomment those two lines if you need Bootstrap-styled blocks.
+>
+> ⚠️ Per the plugin's own description in `Plugin.php`: **you can only have one uploader block per page** for the time being.
 
 #### Available Blocks
 
-| Block | Purpose |
-|-------|---------|
-| `upload.block` | Full-featured upload form with UIKit styling |
-| `upload_bootstrap.block` | Full-featured upload form with Bootstrap styling |
-| `qrcode.block` | QR code generator linking to upload page (UIKit) |
-| `qrcode_bootstrap.block` | QR code generator linking to upload page (Bootstrap) |
-| `gallery.block` | Displays a filterable gallery of uploaded files with optional category tabs |
-| `slideshow.block` | Fullscreen, auto-refreshing slideshow of uploaded files (ideal for live event displays) |
+| Block file | Registered code | Purpose |
+|------------|------------------|---------|
+| `upload.block` | `mercator_uploader_uploader` | Upload form (UIKit), with optional sub-category prompt |
+| `qrcode.block` | `mercator_uploader_qrcode` | QR code linking to an upload/gallery/slideshow page |
+| `gallery.block` | `mercator_uploader_gallery` | Filterable gallery of a form's uploaded files |
+| `slideshow.block` | `mercator_uploader_slideshow` | Fullscreen, auto-refreshing slideshow (for live event displays) |
 
-#### Block Properties
+#### The simplest way: render a block directly in a page or layout
 
-##### Upload Blocks (`upload.block`, `upload_bootstrap.block`)
+You don't need to build a `blocks`-type field to use a block — you can call `renderBlock()` with the registered code and its field values directly in a CMS page's or layout's Twig markup:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `formId` | String | The **Form ID** from backend (required). |
-| `userId` | String | Optional user ID for access validation. |
-| `showDescription` | Boolean | Show the form's description text (default: `true`). |
-| `allowDragDrop` | Boolean | Enable drag-and-drop file upload (default: `true`). |
-| `previewUploads` | Boolean | Show uploaded files in a preview list (default: `true`). |
-
-##### QR Code Blocks (`qrcode.block`, `qrcode_bootstrap.block`)
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `formId` | String | The **Form ID** from backend (required). |
-| `userId` | String | Optional user ID to include in QR link. |
-| `uploadPageUrl` | String | Full URL to the upload page (e.g., `/uploads`). **Required for QR code generation.** |
-| `qrCodeSize` | Number | Size of the QR code in pixels (default: `200`). |
-| `margin` | Number | Margin around QR code in pixels (default: `10`). |
-
-#### QR Code Block Example
-
-```ini
-[QRCodeBlock]
-formId = "survey_2024"
-uploadPageUrl = "https://example.com/file-submission"
-qrCodeSize = 300
-margin = 15
+```twig
+{{ renderBlock('mercator_uploader_gallery', {
+    form_id: 'photo_contest_2024',
+    restrict_categories: []
+}) }}
 ```
 
-This generates a QR code linking directly to `/file-submission?form=survey_2024`, which users can scan with their phone.
+#### The full way: an editable `blocks` field
+
+If you want editors to add/arrange/reconfigure blocks visually in the backend:
+
+1. Add a `blocks`-type field to your page or layout, e.g. via a Winter.Pages layout:
+   ```twig
+   {variable type="blocks" name="blocks" tags="pages" tab="winter.pages::lang.editor.content"}{/variable}
+   ```
+2. In the page editor, open the **Blocks** widget and add e.g. "Uppy - File Uploader" or "Uppy - Gallery" from the palette, filling in the fields shown per block below.
+3. Render the collected blocks in your layout:
+   ```twig
+   {{ renderBlocks(blocks) }}
+   ```
+
+#### Block Fields
+
+##### `upload.block`
+
+| Field (YAML key) | Type | Description |
+|-------------------|------|-------------|
+| `form_id` | Dropdown | The form this uploader submits to. Overridden by a `?id=FORM_ID` URL parameter if present. |
+| `text_position` | Dropdown | `none`, `above`, or `below` — where to render the form's title/description relative to the uploader. |
+| `restrict_categories` | Checkbox list | Which of the form's sub-categories to offer when uploading. Defaults to `["all"]` (every category). If this resolves to exactly one category, the picker is skipped. |
+| `category_prompt_text` | Text | The question shown above the sub-category picker (default: "Where was this taken?"). |
+
+##### `qrcode.block`
+
+| Field (YAML key) | Type | Description |
+|-------------------|------|-------------|
+| `form_id` | Dropdown | The form to generate a QR code for. Overridden by `?id=FORM_ID`. |
+| `url` | Text | Relative URL of the page the code should link to (default: `/mercator/uploader/default`, the plugin's built-in upload page). |
+| `text_position` | Dropdown | `none`, `above`, or `below` — position of the form's title/description. |
+
+##### `gallery.block` / `slideshow.block`
+
+Both share the same two fields:
+
+| Field (YAML key) | Type | Description |
+|-------------------|------|-------------|
+| `form_id` | Dropdown | The form whose uploaded files to display. Overridden by `?id=FORM_ID`. |
+| `restrict_categories` | Checkbox list | Which sub-galleries to show. Defaults to `["all"]` (every category); files with no category only show when "All" is checked. |
+
+> None of the blocks have a `user_id`/`userId` field. For a **restricted** form, pass the viewer's token as a `?user=TOKEN` query parameter on the page URL — omitted, it defaults to the literal string `NONE`, which never matches a real token.
+
+#### QR Code Example
+
+```twig
+{{ renderBlock('mercator_uploader_qrcode', {
+    form_id: 'survey_2024',
+    url: '/file-submission',
+    text_position: 'above'
+}) }}
+```
+
+Scanning the generated code opens `/file-submission?id=survey_2024`.
 
 ---
 
-#### Gallery Block (`gallery.block`)
+#### Gallery Example
 
-Displays a responsive grid/gallery of all files uploaded to a form, with optional filtering by sub-galleries (categories).
+```twig
+{# All files #}
+{{ renderBlock('mercator_uploader_gallery', { form_id: 'photo_contest_2024', restrict_categories: [] }) }}
 
-##### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `formId` | String | The **Form ID** from backend. Can be overridden by URL parameter `?id=FORM_ID`. |
-| `restrictCategories` | Array | Limit displayed files to specific sub-galleries. Leave empty or use `["all"]` to show all files. |
-
-##### Gallery Block Example
-
-```ini
-[GalleryBlock]
-formId = "photo_contest_2024"
-restrictCategories = []
+{# Only specific sub-galleries #}
+{{ renderBlock('mercator_uploader_gallery', { form_id: 'photo_contest_2024', restrict_categories: ['landscape', 'portrait'] }) }}
 ```
 
-This displays all uploaded photos from the contest in a responsive gallery grid.
-
-**With Category Filtering:**
-
-```ini
-[GalleryBlock]
-formId = "photo_contest_2024"
-restrictCategories = ["landscape", "portrait"]
-```
-
-This displays only photos in the "landscape" and "portrait" categories.
-
-**Dynamic Form via URL:**
-
-Create a gallery page and reference it as:
-```
-https://example.com/gallery?id=photo_contest_2024
-```
-
-The `?id=` parameter will override the backend form selection.
+**Dynamic form via URL:** visiting the gallery page as `?id=photo_contest_2024` overrides whichever `form_id` was set on the block.
 
 ---
 
-#### Slideshow Block (`slideshow.block`)
+#### Slideshow Example — Live Event Display
 
-A fullscreen, auto-refreshing slideshow displaying files from an upload form. Perfect for live event displays, exhibitions, or real-time photo feeds.
-
-##### Features
-
-- **Fullscreen Display** — immersive presentation of uploaded content
-- **Auto-refresh** — automatically loads new uploads without page reload
-- **Category Filtering** — optionally restrict to specific sub-galleries
-- **Live Event Ready** — designed for displaying user-submitted content in real-time
-
-##### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `formId` | String | The **Form ID** from backend. Can be overridden by URL parameter `?id=FORM_ID`. |
-| `restrictCategories` | Array | Limit displayed files to specific sub-galleries. Leave empty or use `["all"]` to show all files. |
-
-##### Slideshow Block Example
-
-```ini
-[SlideshowBlock]
-formId = "event_2024_photos"
-restrictCategories = []
-```
-
-This creates a fullscreen slideshow of all photos submitted to the event.
-
-**With Category Filtering:**
-
-```ini
-[SlideshowBlock]
-formId = "event_2024_photos"
-restrictCategories = ["professional", "amateur"]
-```
-
-This displays only photos from the "professional" and "amateur" categories in the slideshow.
-
-##### Setup for Live Events
-
-1. Create an upload form in the backend (e.g., `event_photos`)
-2. Create a CMS page (e.g., `/event-display`) with the slideshow block
-3. Direct an event display screen to this page
-4. Users upload photos via another page with the `upload.block`
-5. Photos appear live in the slideshow automatically
-
-**Example Event Page Structure:**
+1. Create an upload form in the backend (e.g. `event_photos`).
+2. Create a CMS page (e.g. `/event-display`) rendering the slideshow block, using a minimal/fullscreen layout.
+3. Point an event display screen at that page.
+4. Visitors upload via a separate page rendering `upload.block` for the same form.
+5. New uploads appear in the slideshow automatically (it polls the feed — see `uploaderSlideshowFeedUrl` under [Helper Functions](#helper-functions)).
 
 ```yaml
 title = "Live Event Display"
 url = "/event-display"
 layout = "bare"
-===
-
-[SlideshowBlock]
-formId = "event_photos"
-restrictCategories = []
+==
+{{ renderBlock('mercator_uploader_slideshow', { form_id: 'event_photos', restrict_categories: [] }) }}
 ```
 
-Use a `bare` or `fullscreen` layout to maximize the display area.
+Use a minimal/fullscreen layout to maximize the display area.
 
 ---
 
@@ -348,32 +321,30 @@ Use a `bare` or `fullscreen` layout to maximize the display area.
 
 ### Dynamic Form ID
 
-You can pass the `formId` dynamically from page parameters:
+The `Uploader` component doesn't read `?id=` from the URL automatically the way blocks do, but you can wire that up yourself using the `input()` Twig helper:
 
 ```twig
-[Uploader]
-formId = "{{ request('form') }}"
+[uploader]
+formId = "{{ input('id') }}"
 
 {% component 'uploader' %}
 ```
 
-URL: `https://example.com/upload?form=your_form_id`
+URL: `https://example.com/upload?id=your_form_id`
 
-### Conditional Rendering
+### Passing a User Token from the URL
 
-Show the upload form only if a user is authenticated:
+For a restricted form, the viewer's token typically arrives as a URL query parameter (e.g. from an invite email link) rather than being known in advance:
 
 ```twig
-{% if auth.user %}
-    [Uploader]
-    formId = "authenticated_form"
-    userId = "{{ auth.user.id }}"
-    
-    {% component 'uploader' %}
-{% else %}
-    <p>Please log in to upload files.</p>
-{% endif %}
+[uploader]
+formId = "restricted_form"
+userId = "{{ input('user') }}"
+
+{% component 'uploader' %}
 ```
+
+URL: `https://example.com/upload?user=THEIR_TOKEN` — the token comes from the form's Users tab, not from a WinterCMS site-user account.
 
 ### Custom Styling
 
@@ -417,17 +388,17 @@ Retrieve an upload form object by its Form ID.
 ```
 
 **Returns:**
-- Form object with properties: `id`, `title`, `description`, `allowed_extensions`, `max_file_size`, `restricted`
+- A form object with properties including `id`, `form_id`, `title`, `description`, `allowed_types`, `max_file_size`, `max_total_file_size`, `restricted`, `start_date`, `end_date`
 - `null` if form not found
 
 ---
 
-### `uploaderUserIsPermissioned(form_id, user_id)`
+### `uploaderUserIsPermissioned(form_id, user_token)`
 
-Check if a user has permission to upload to a specific form.
+Check if a token has permission to access a specific form. Always `true` for a non-restricted form.
 
 ```twig
-{% if uploaderUserIsPermissioned('form_123', 'user@example.com') %}
+{% if uploaderUserIsPermissioned('form_123', input('user')) %}
     <p>You are authorized to upload.</p>
 {% else %}
     <p>You do not have permission to upload to this form.</p>
@@ -440,41 +411,59 @@ Check if a user has permission to upload to a specific form.
 
 ---
 
-### `uploaderOpen(form_id, user_id = null)`
+### `uploaderUploaderOpen(form_id, user_token = null)`
 
-Validate form access and return authorization status.
+Validates a form's access **and** its upload time window (`start_date`/`end_date`), returning a status code. This is what `upload.block` uses to decide whether to show the uploader.
 
 ```twig
-{% set status = uploaderOpen('form_123', 'user@example.com') %}
+{% set status = uploaderUploaderOpen('form_123', 'their_token') %}
 {% if status == 0 %}
-    <p>Upload authorized!</p>
+    <p>Upload open!</p>
 {% else %}
-    <p>Upload denied. Error code: {{ status }}</p>
+    <p>Upload unavailable (code {{ status }}).</p>
 {% endif %}
 ```
 
 **Returns:**
-- `0` = Upload authorized
-- `1` = Form not found
-- `2` = User not authorized (form is restricted)
-- `3` = Missing required user ID
+- `0` = Open — upload authorized and within the time window
+- `-1` = Form not found
+- `-2` = Form is restricted and the given token doesn't match an active user
+- `1` = Too early (before `start_date`)
+- `2` = Too late (after `end_date`)
 
 ---
 
-### `uploaderQRCode(url, size = 200, margin = 10)`
+### `uploaderQRCode(data, size = 300, margin = 6)`
 
-Generate a QR code for an upload URL.
+Generate an inline QR code image (as a data URI) for arbitrary string data — typically a URL.
 
 ```twig
-{{ uploaderQRCode('https://example.com/upload?form=my_form', 300, 15) }}
+{{ uploaderQRCode('https://example.com/upload?id=my_form', 400, 4) | raw }}
 ```
 
 **Parameters:**
-- `url` (String): The full URL to encode in the QR code
-- `size` (Integer): QR code size in pixels (default: 200)
-- `margin` (Integer): Margin/padding around QR code (default: 10)
+- `data` (String): The string to encode (usually a URL)
+- `size` (Integer): QR code size in pixels (default: 300)
+- `margin` (Integer): Margin/padding around the QR code (default: 6)
 
-**Returns:** HTML string with embedded QR code image
+**Returns:** A `data:` URI string — wrap it in an `<img src="...">`, as `qrcode.block` does.
+
+---
+
+### Additional Helper Functions
+
+These support building custom galleries, feeds, and moderation links:
+
+| Function | Description |
+|----------|-------------|
+| `uploaderFiles(form_id, category = null, limit = 500)` | Returns the form's uploaded files, newest first, optionally filtered by category name. |
+| `uploaderMediaUrl(form_id, file_token, user_token = null)` | Full-size media URL for a file. |
+| `uploaderThumbUrl(form_id, file_token, user_token = null)` | Thumbnail URL for a file. |
+| `uploaderDownloadUrl(form_id, user_token = null)` | URL to download all of a user's files as an archive. |
+| `uploaderSlideshowFeedUrl(form_id, user_token = null)` | JSON feed URL polled by `slideshow.block` for new uploads. |
+| `uploaderModerateDeleteUrl(form_id, owner_token, file_token)` | URL to delete a file from the owner's moderation page. |
+| `uploaderModerateCategoryUrl(form_id, owner_token, file_token)` | URL to change a file's category from the owner's moderation page. |
+| `uploaderRestrictedCategoryNames(form_id, selected_keys)` | Resolves a `restrict_categories` block field's selected keys to category names; used internally by the gallery/slideshow/upload blocks. |
 
 ---
 
@@ -494,7 +483,7 @@ Generate a QR code for an upload URL.
 title = "Upload Documents"
 url = "/upload-documents"
 
-[Uploader]
+[uploader]
 formId = "documents_upload"
 
 ---
@@ -506,27 +495,29 @@ formId = "documents_upload"
 
 ---
 
-### Example 2: Restricted Uploads with Authentication
+### Example 2: Restricted Uploads via Invite Link
 
 **Backend Setup:**
 - Create upload form with ID: `staff_files`
 - Title: "Staff File Submission"
 - Allowed extensions: `jpg,png,pdf`
-- Restricted: Yes
-- Authorized Users: `staff@company.com`, `manager@company.com`
+- Restrictions tab → Restrict access to specific users: Yes
+- Users tab: add `staff@company.com` and `manager@company.com`, then select them and click **Send Invites**
 
-**Frontend Page:**
+Each invited user receives an email with their own upload link containing their auto-generated token.
+
+**Frontend Page** (reads the token from the URL, as the invite link provides it):
 ```twig
-{% if auth.user %}
-    [Uploader]
-    formId = "staff_files"
-    userId = "{{ auth.user.email }}"
-    
-    {% component 'uploader' %}
-{% else %}
-    <p><a href="/login">Log in</a> to submit files.</p>
-{% endif %}
+[uploader]
+formId = "staff_files"
+userId = "{{ input('user') }}"
+
+---
+<h1>Staff File Submission</h1>
+{% component 'uploader' %}
 ```
+
+The component itself checks `uploaderUserIsPermissioned` and shows "Upload form not found or user not authorized." if the token in the URL doesn't match.
 
 ---
 
@@ -541,16 +532,14 @@ formId = "documents_upload"
 ```yaml
 title = "Event Registration"
 url = "/event-2024"
-
-[QRCodeBlock]
-formId = "event_2024_registration"
-uploadPageUrl = "https://example.com/event-2024/upload"
-qrCodeSize = 300
-
----
+==
 <div class="event-promotion">
     <h2>Scan to Register</h2>
-    {% component 'blockComponent' %}
+    {{ renderBlock('mercator_uploader_qrcode', {
+        form_id: 'event_2024_registration',
+        url: '/mercator/uploader/default',
+        text_position: 'above'
+    }) }}
     <p>Scan the QR code with your phone to submit registration documents.</p>
 </div>
 ```
@@ -559,26 +548,26 @@ qrCodeSize = 300
 
 ### Example 4: Multi-form Upload Page
 
-Display multiple upload forms on one page:
+Display multiple upload forms on one page by binding the component twice under different aliases:
+
+```ini
+[uploader idDocument]
+formId = "id_document"
+
+[uploader proofOfAddress]
+formId = "proof_of_address"
+```
 
 ```twig
 <section class="uploads">
     <div class="form-group">
         <h3>ID Document</h3>
-        [Uploader]
-        formId = "id_document"
-        userId = "{{ auth.user.id }}"
-        
-        {% component 'uploader' %}
+        {% component 'idDocument' %}
     </div>
-    
+
     <div class="form-group">
         <h3>Proof of Address</h3>
-        [Uploader]
-        formId = "proof_of_address"
-        userId = "{{ auth.user.id }}"
-        
-        {% component 'uploader' %}
+        {% component 'proofOfAddress' %}
     </div>
 </section>
 ```
@@ -594,7 +583,7 @@ Set up a dual-page system where users submit photos and a display screen shows t
 title = "Submit Your Photos"
 url = "/event-submit"
 
-[Uploader]
+[uploader]
 formId = "event_photos_2024"
 
 ---
@@ -610,10 +599,8 @@ formId = "event_photos_2024"
 title = "Live Event Display"
 url = "/event-display"
 layout = "blank"
-
-[SlideshowBlock]
-formId = "event_photos_2024"
-restrictCategories = []
+==
+{{ renderBlock('mercator_uploader_slideshow', { form_id: 'event_photos_2024', restrict_categories: [] }) }}
 ```
 
 **Workflow:**
@@ -632,7 +619,7 @@ Set up a contest where submissions are organized by category:
 title = "Photo Contest - Submit Entry"
 url = "/contest-submit"
 
-[Uploader]
+[uploader]
 formId = "photo_contest"
 
 ---
@@ -645,33 +632,27 @@ formId = "photo_contest"
 ```yaml
 title = "Photo Contest - Gallery"
 url = "/contest-gallery"
-
-[GalleryBlock]
-formId = "photo_contest"
-restrictCategories = []
+==
+{{ renderBlock('mercator_uploader_gallery', { form_id: 'photo_contest', restrict_categories: [] }) }}
 ```
 
 **Page 3: Category-Filtered Gallery**
 ```yaml
 title = "Landscape Photos"
 url = "/contest-gallery/landscape"
-
-[GalleryBlock]
-formId = "photo_contest"
-restrictCategories = ["landscape"]
+==
+{{ renderBlock('mercator_uploader_gallery', { form_id: 'photo_contest', restrict_categories: ['landscape'] }) }}
 ```
 
 **Page 4: Another Category Filter**
 ```yaml
 title = "Portrait Photos"
 url = "/contest-gallery/portrait"
-
-[GalleryBlock]
-formId = "photo_contest"
-restrictCategories = ["portrait"]
+==
+{{ renderBlock('mercator_uploader_gallery', { form_id: 'photo_contest', restrict_categories: ['portrait'] }) }}
 ```
 
-Visitors can browse submissions by category or view all photos.
+Visitors can browse submissions by category or view all photos. Categories are defined per-form on the **Categories** tab in the backend (see [Backend Setup](#backend-setup)).
 
 ---
 
@@ -688,9 +669,20 @@ Visitors can browse submissions by category or view all photos.
 - **Browser Compatibility:** Most browsers don't natively support HEIF/HEIC, so a large conversion library is lazy-loaded when needed
 - This may impact bandwidth usage — use caution when allowing HEIF uploads on bandwidth-limited connections
 
+### Ready-made Default Pages
+If you don't want to build custom CMS pages, the plugin ships working pages out of the box:
+
+| URL | Purpose |
+|-----|---------|
+| `/mercator/uploader/default/{form_id}/{user_token?}` | Upload page |
+| `/mercator/uploader/gallery/{form_id}/{user_token?}` | Gallery page |
+| `/mercator/uploader/slideshow/{form_id}/{user_token?}` | Slideshow page |
+
+These are what invite emails and QR codes link to by default.
+
 ### Supported Frameworks
-- Works with both **UIKit** and **Bootstrap** frontends
-- Pre-built blocks for both frameworks are included
+- The active blocks and the `Uploader` component are styled with **UIKit**
+- Bootstrap-styled block variants exist in `/blocks` but are currently commented out in `Plugin.php`'s `registerBlocks()` — see [Using Pre-built Blocks](#using-pre-built-blocks)
 - Custom styling via CSS override is possible
 
 ### Compatibility
