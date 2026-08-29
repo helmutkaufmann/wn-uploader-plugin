@@ -27,7 +27,7 @@ class UploadForms extends Controller
 
     public function onBulkDelete()
     {
-        
+
         if (!$this->user->hasAccess("mercator.uploader.manage")) {
             throw new ApplicationException("You do not have permission to delete forms.");
         }
@@ -38,16 +38,43 @@ class UploadForms extends Controller
             return;
         }
 
+        $keepFiles = post("keepFiles") == "1";
+
         $count = 0;
+        \Mercator\Uploader\Models\UploadedFile::$keepFilesOnDisk = $keepFiles;
         foreach ($checkedIds as $id) {
             if ($model = \Mercator\Uploader\Models\UploadForm::find($id)) {
                 $model->delete();
                 $count++;
             }
         }
+        \Mercator\Uploader\Models\UploadedFile::$keepFilesOnDisk = false;
 
         Flash::success($count . " form(s) deleted.");
         return $this->listRefresh();
+    }
+
+    /**
+     * Overrides the default toolbar's delete handler so the "keep files on disk" choice
+     * (offered by our custom controllers/uploadforms/_form_update_toolbar.php) can be honored
+     * before the form (and its cascading "files" relation) is deleted.
+     *
+     * Must be named update_onDelete, not onDelete: Controller::runAjaxHandler() checks the
+     * page-specific "{action}_{handler}" name (update_onDelete, provided by the FormController
+     * behavior) before it ever checks a plain "onDelete" — so a same-named override is the only
+     * way to actually intercept this on an update-context page.
+     */
+    public function update_onDelete($recordId = null)
+    {
+        if (!$this->user->hasAccess("mercator.uploader.manage")) {
+            throw new ApplicationException("You do not have permission to delete forms.");
+        }
+
+        \Mercator\Uploader\Models\UploadedFile::$keepFilesOnDisk = post("keepFiles") == "1";
+        $result = $this->asExtension("FormController")->update_onDelete($recordId);
+        \Mercator\Uploader\Models\UploadedFile::$keepFilesOnDisk = false;
+
+        return $result;
     }
 
     public function onSendInvites()

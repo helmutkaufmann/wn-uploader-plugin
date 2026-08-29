@@ -40,6 +40,14 @@ class UploadedFile extends Model
         return $this->categoryRecord?->name;
     }
 
+    /**
+     * When true, beforeDelete() removes the DB row only and leaves the physical file on disk.
+     * Set by UploadForms::onDelete()/onBulkDelete() for the "delete form, keep files" choice —
+     * a static flag rather than trying to race the "files" relation's cascade (which deletes
+     * each UploadedFile individually via forceDelete(), triggering this same beforeDelete()).
+     */
+    public static bool $keepFilesOnDisk = false;
+
     public function beforeCreate()
     {
         if (!$this->file_token) {
@@ -55,6 +63,10 @@ class UploadedFile extends Model
      */
     public function beforeDelete()
     {
+        if (self::$keepFilesOnDisk) {
+            return;
+        }
+
         $disk = Storage::disk($this->disk);
 
         if ($this->path && $disk->exists($this->path)) {

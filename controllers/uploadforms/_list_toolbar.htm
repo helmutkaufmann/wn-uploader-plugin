@@ -6,17 +6,22 @@
     </a>
 
     <button
+        type="button"
         class="btn btn-danger wn-icon-trash"
-        data-request="onBulkDelete"
-        data-request-confirm="Delete all selected upload forms? This cannot be undone."
         disabled="disabled"
-        onclick="$(this).data('request-data', {
-            checked: $('.control-list').listWidget('getChecked')
-        })"
+        onclick="
+            if (!confirm('Delete all selected upload forms? This cannot be undone.')) return;
+            var keepFiles = !confirm('Also permanently delete the uploaded files from disk?\n\nOK = delete the files\nCancel = keep the files, only delete the forms');
+            $(this).request('onBulkDelete', {
+                data: {
+                    checked: $('.control-list').listWidget('getChecked'),
+                    keepFiles: keepFiles ? 1 : 0
+                }
+            })
+        "
         data-trigger-action="enable"
         data-trigger=".control-list input[type=checkbox]"
         data-trigger-condition="checked"
-        data-request-success="$(this).prop('disabled', true)"
         data-stripe-load-indicator
     >
         Delete selected
