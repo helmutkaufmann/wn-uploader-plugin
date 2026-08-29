@@ -88,6 +88,7 @@ tabs:
       tab: Pre-Processing
       span: right
       default: false
+      comment: "Only applies when client-side resizing/compression is enabled below, and only for JPEG output (a limitation of the compression library) — PNG/WebP always lose EXIF. Cropping or rotating with the Image Editor also always strips EXIF, regardless of this setting."
 
     client_resize_enabled:
       label: Enable client-side resizing and compression

@@ -2,7 +2,13 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>{{ form.title }}</title>
+        <title>{{ uploaderForm(id).title }}</title>
+        <meta property="og:title" content="{{ uploaderForm(id).title }}" />
+        {% if uploaderForm(id).description %}
+        <meta name="description" content="{{ uploaderForm(id).description|striptags }}" />
+        <meta property="og:description" content="{{ uploaderForm(id).description|striptags }}" />
+        {% endif %}
+        <meta property="og:type" content="website" />
         <meta name="csrf-token" content="{{ csrf }}" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
     </head>

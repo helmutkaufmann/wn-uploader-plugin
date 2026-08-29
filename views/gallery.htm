@@ -3,6 +3,12 @@
     <head>
         <meta charset="utf-8" />
         <title>{{ uploaderForm(id).title }} — Gallery</title>
+        <meta property="og:title" content="{{ uploaderForm(id).title }} — Gallery" />
+        {% if uploaderForm(id).description %}
+        <meta name="description" content="{{ uploaderForm(id).description|striptags }}" />
+        <meta property="og:description" content="{{ uploaderForm(id).description|striptags }}" />
+        {% endif %}
+        <meta property="og:type" content="website" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
     </head>
 

@@ -156,7 +156,7 @@
             quality: {{ (form.client_resize_quality ?? 0.8) + 0 }},
             maxWidth: {{ form.client_resize_max_width ?? 1920 }},
             maxHeight: {{ form.client_resize_max_height ?? 1080 }},
-            preserveExif: {{ form.preserve_exif ? 'true' : 'false' }}
+            retainExif: {{ form.preserve_exif ? 'true' : 'false' }}
         })
         {% endif %}
         .use(Uppy.Webcam, { target: Uppy.Dashboard, showVideoSourceDropdown: true })
