@@ -135,4 +135,30 @@ class UploadForms extends Controller
         // Refresh the users relation list in the current form context.
         return $this->relationRefresh("users");
     }
+
+    /**
+     * Issues a fresh owner/moderation token for a form, invalidating whatever link was handed
+     * out before — for when it's leaked, or the form is being handed off to a new owner.
+     */
+    public function onRegenerateOwnerToken()
+    {
+        if (!$this->user->hasAccess("mercator.uploader.manage")) {
+            throw new ApplicationException("You do not have permission to manage upload forms.");
+        }
+
+        $form = \Mercator\Uploader\Models\UploadForm::find(post("id"));
+        if (!$form) {
+            throw new ApplicationException("Form not found.");
+        }
+
+        $form->owner_token = bin2hex(random_bytes(12));
+        $form->timestamps = false;
+        $form->save();
+
+        Flash::success("Moderation link regenerated. The previous link no longer works.");
+
+        return [
+            "url" => url("/mercator/uploader/moderate/" . $form->form_id . "/" . $form->owner_token),
+        ];
+    }
 }

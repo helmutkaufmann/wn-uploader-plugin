@@ -137,6 +137,18 @@ class CategoriesTable_008000 extends Migration
         }
 
         if (Schema::hasColumn('mercator_uploader_files', 'category_id')) {
+            // Same SQLite quirk as the 'category' column above: dropping an indexed column
+            // fails ("no such column" while rebuilding the index) unless the index is dropped
+            // first. Wrapped in a try/catch since a retry after a partial failure may have
+            // already dropped it.
+            try {
+                Schema::table('mercator_uploader_files', function ($table) {
+                    $table->dropIndex('mercator_uploader_files_category_id_index');
+                });
+            } catch (\Throwable $e) {
+                // Already gone — fine.
+            }
+
             Schema::table('mercator_uploader_files', function ($table) {
                 $table->dropColumn('category_id');
             });

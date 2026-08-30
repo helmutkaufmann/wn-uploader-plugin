@@ -11,9 +11,19 @@
                     b.textContent = 'Copied!';
                     setTimeout(function(){ b.textContent = 'Copy'; }, 2000);
                 })(this)">Copy</button>
-        <a href="<?= e($moderateUrl) ?>" target="_blank" class="btn btn-default btn-sm">Open</a>
+        <a href="<?= e($moderateUrl) ?>" target="_blank" class="btn btn-default btn-sm" id="ownerlink-open-<?= $formModel->id ?>">Open</a>
+        <button type="button" class="btn btn-default btn-sm"
+                data-request="onRegenerateOwnerToken"
+                data-request-data="id: <?= $formModel->id ?>"
+                data-request-confirm="Regenerate the moderation link? The current link will stop working immediately &mdash; anyone still using it (e.g. the gallery owner) will need the new one."
+                data-request-success="
+                    document.getElementById('ownerlink-<?= $formModel->id ?>').value = data.url;
+                    document.getElementById('ownerlink-open-<?= $formModel->id ?>').href = data.url;
+                ">
+            Regenerate
+        </button>
     </div>
-    <p class="help-block">Give this link only to the gallery owner (e.g. the couple) so they can review and delete uploads themselves &mdash; no backend account needed.</p>
+    <p class="help-block">Give this link only to the gallery owner (e.g. the couple) so they can review and delete uploads themselves &mdash; no backend account needed. Regenerating invalidates the old link.</p>
 </div>
 <?php else: ?>
     <p class="help-block">Save the form once to generate the moderation link.</p>
