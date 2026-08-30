@@ -159,7 +159,12 @@
             retainExif: {{ form.preserve_exif ? 'true' : 'false' }}
         })
         {% endif %}
+        {% set VIDEO_EXTENSIONS = ['mp4', 'mov', 'webm', 'avi', 'mkv', 'm4v', 'wmv', 'flv', '3gp', '3g2'] %}
+        {% set allowed_type_list = (form.allowed_types|lower|split(',')|map(t => t|trim))|filter %}
+        {% set has_video_types = allowed_type_list|map(t => t in VIDEO_EXTENSIONS)|contains(true) %}
+        {% if has_video_types %}
         .use(Uppy.Webcam, { target: Uppy.Dashboard, showVideoSourceDropdown: true })
+        {% endif %}
         .use(Uppy.Audio, { target: Uppy.Dashboard })
         .use(Uppy.ScreenCapture, { target: Uppy.Dashboard })
         .use(Uppy.XHRUpload, {
